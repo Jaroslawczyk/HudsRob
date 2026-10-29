@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мобильная гача</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Rubik', system-ui, sans-serif; color: #fff; --pri: #7b5cff; --pri2: #ff5ca8; --gold: #ffc533; --dark: #1b1240; --ok: #22d07a; }
+  .sh { text-shadow: 0 2px 0 #0006; }
+  .a { position: absolute; z-index: 5; }
+  .topbar { left: 10px; right: 10px; top: 10px; display: flex; gap: 8px; align-items: center; }
+  .ava { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #ffd17a, #ff8a3d); border: 3px solid #fff; display: grid; place-items: center; font-size: 28px; position: relative; }
+  .ava b { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: var(--pri); border: 2px solid #fff; border-radius: 10px; font-size: 11px; padding: 0 6px; }
+  .res { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 4px 0 10px; border-radius: 17px; background: #1b1240cc; border: 2px solid #ffffff33; font-weight: 800; font-size: 15px; }
+  .res .p { width: 26px; height: 26px; border-radius: 50%; background: var(--ok); display: grid; place-items: center; font-size: 18px; font-weight: 900; cursor: pointer; }
+  .sp { flex: 1; }
+  .ib { width: 48px; height: 48px; border-radius: 14px; background: #1b1240cc; border: 2px solid #ffffff33; display: grid; place-items: center; font-size: 24px; position: relative; cursor: pointer; }
+  .dot { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: #ff3b5c; border: 2px solid #fff; }
+  .offer { right: 10px; top: 72px; width: 170px; border-radius: 16px; overflow: hidden; cursor: pointer; border: 3px solid var(--gold);
+    background: linear-gradient(135deg, #ff5ca8, #7b5cff); box-shadow: 0 6px 20px #ff5ca866; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.04); } }
+  .offer .h { background: var(--gold); color: var(--dark); font-weight: 900; font-size: 12px; text-align: center; padding: 3px; }
+  .offer .c { padding: 8px; text-align: center; font-weight: 800; font-size: 14px; } .offer .c .e { font-size: 34px; display: block; }
+  .offer .c s { opacity: .6; font-size: 12px; }
+  .evt { left: 10px; top: 76px; display: flex; flex-direction: column; gap: 8px; }
+  .evt .ib { width: 60px; height: 60px; flex-direction: column; font-size: 24px; }
+  .evt .ib small { font-size: 10px; font-weight: 800; }
+  .joy { left: 40px; bottom: 30px; width: 130px; height: 130px; border-radius: 50%; background: #ffffff22; border: 3px solid #ffffff55; }
+  .joy::after { content: ''; position: absolute; left: 35px; top: 35px; width: 60px; height: 60px; border-radius: 50%; background: #ffffff88; }
+  .act { right: 30px; bottom: 30px; width: 110px; height: 110px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; text-align: center;
+    background: radial-gradient(circle at 35% 30%, #fff6, transparent 50%), linear-gradient(#ffc533, #ff7a1a); border: 4px solid #fff; box-shadow: 0 6px 0 #a3470a, 0 10px 20px #0005; font-weight: 900; font-size: 12px; }
+  .act .e { font-size: 38px; display: block; }
+  .act:active { transform: translateY(4px); box-shadow: 0 2px 0 #a3470a; }
+  .sm { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; background: #1b1240cc; border: 3px solid #ffffff66; cursor: pointer; }
+  .s1 { right: 150px; bottom: 30px; } .s2 { right: 40px; bottom: 156px; } .s3 { right: 150px; bottom: 120px; width: 54px; height: 54px; font-size: 22px; }
+  .s1.off { background: #ff3b5ccc; } .s1.on { background: #22d07acc; }
+  .menuBtn { left: 50%; bottom: 14px; transform: translateX(-50%); padding: 10px 26px; border-radius: 30px; background: linear-gradient(var(--pri), #5a3ee0); border: 3px solid #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 5px 0 #3a2399; }
+  /* full-screen app */
+  .app { position: absolute; inset: 0; z-index: 50; display: none; flex-direction: column; background: radial-gradient(circle at 50% 0, #4b2fb3, #1b1240 70%); }
+  .app.on { display: flex; }
+  .ah { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+  .ah h2 { margin: 0; font-size: 24px; font-weight: 900; } .ah .sp { flex: 1; }
+  .back { width: 44px; height: 44px; border-radius: 12px; border: 2px solid #ffffff44; background: #ffffff18; color: #fff; font-size: 22px; cursor: pointer; }
+  .ab { flex: 1; min-height: 0; overflow: auto; padding: 4px 14px 14px; }
+  .tabbar { display: flex; background: #120a30; border-top: 2px solid #ffffff22; padding: 6px 6px 8px; gap: 4px; }
+  .tb { flex: 1; text-align: center; border-radius: 14px; padding: 6px 0 4px; font-size: 11px; font-weight: 800; color: #b8acf0; cursor: pointer; position: relative; }
+  .tb .e { display: block; font-size: 24px; transition: transform .15s; }
+  .tb.on { background: linear-gradient(var(--pri), #5a3ee0); color: #fff; } .tb.on .e { transform: translateY(-6px) scale(1.2); }
+  .tb .dot { right: 22%; top: 2px; }
+  .banner { border-radius: 18px; padding: 14px 18px; background: linear-gradient(120deg, #ff5ca8, #ffb347); display: flex; align-items: center; gap: 14px; margin-bottom: 12px; position: relative; overflow: hidden; }
+  .banner .e { font-size: 64px; } .banner h3 { margin: 0; font-size: 22px; font-weight: 900; } .banner small { opacity: .9; }
+  .banner .tmr { position: absolute; top: 10px; right: 14px; background: #0005; border-radius: 10px; padding: 3px 8px; font-size: 12px; font-weight: 800; }
+  .banner::after { content: ''; position: absolute; top: 0; bottom: 0; width: 60px; background: #ffffff55; transform: skewX(-20deg); animation: shine 3s infinite; }
+  @keyframes shine { from { left: -80px; } 40%, to { left: 120%; } }
+  .gbtn { border: 0; border-radius: 14px; padding: 10px 16px; font: 900 15px 'Rubik'; color: #fff; cursor: pointer; background: linear-gradient(#2ee68a, #17a85d); box-shadow: 0 4px 0 #0d6b3a; }
+  .gbtn.gold { background: linear-gradient(#ffd75a, #ff9f1a); box-shadow: 0 4px 0 #a35a00; color: var(--dark); }
+  .gbtn.gray { background: #4a4170; box-shadow: 0 4px 0 #2a2350; color: #b8acf0; }
+  .gbtn.pri { background: linear-gradient(#9b80ff, #6b4cf0); box-shadow: 0 4px 0 #3a2399; }
+  .gbtn:active { transform: translateY(3px); box-shadow: none; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .cd { border-radius: 16px; padding: 10px; text-align: center; background: linear-gradient(#ffffff22, #ffffff08); border: 2px solid var(--r); position: relative; }
+  .cd .e { font-size: 44px; } .cd b { display: block; font-size: 14px; min-height: 34px; } .cd .gbtn { width: 100%; margin-top: 6px; padding: 8px; font-size: 13px; }
+  .cd .rl { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--r); border-radius: 14px 14px 0 0; }
+  .seg { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; }
+  .seg button { border: 2px solid #ffffff33; background: #ffffff14; color: #fff; border-radius: 20px; padding: 6px 14px; font: 800 13px 'Rubik'; cursor: pointer; white-space: nowrap; }
+  .seg button.on { background: #fff; color: var(--dark); }
+  /* season pass */
+  .pass { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+  .lvl { flex: none; width: 92px; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .lvl .n { width: 32px; height: 32px; border-radius: 50%; background: #4a4170; display: grid; place-items: center; font-weight: 900; font-size: 14px; border: 2px solid #ffffff44; }
+  .lvl.done .n { background: var(--ok); }
+  .rw { width: 92px; height: 80px; border-radius: 14px; display: grid; place-items: center; font-size: 30px; position: relative; cursor: pointer; background: #ffffff14; border: 2px solid #ffffff33; }
+  .rw.prem { background: linear-gradient(#ffc53333, #ff5ca833); border-color: var(--gold); }
+  .rw small { position: absolute; bottom: 3px; font-size: 11px; font-weight: 800; }
+  .rw.claim { animation: pulse 1s infinite; border-color: var(--ok); box-shadow: 0 0 14px var(--ok); }
+  .rw.got::after { content: '✔'; position: absolute; inset: 0; display: grid; place-items: center; background: #000a; border-radius: 12px; color: var(--ok); }
+  .rw.lock::after { content: '🔒'; position: absolute; top: -8px; right: -6px; font-size: 16px; }
+  .rowlbl { display: flex; gap: 8px; align-items: center; font-weight: 800; margin: 6px 0; }
+  .prog { height: 14px; border-radius: 7px; background: #00000055; overflow: hidden; margin-bottom: 12px; } .prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), #a6ff5c); }
+  .daily { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .day { border-radius: 14px; padding: 8px 4px; text-align: center; background: #ffffff14; border: 2px solid #ffffff33; font-weight: 800; font-size: 12px; cursor: pointer; position: relative; }
+  .day .e { font-size: 28px; display: block; margin: 4px 0; } .day.today { border-color: var(--gold); background: #ffc53333; animation: pulse 1.2s infinite; } .day.got { opacity: .45; } .day.d7 { background: linear-gradient(#ff5ca855, #7b5cff55); }
+  /* gacha */
+  .eggs { display: flex; gap: 12px; margin-bottom: 12px; }
+  .egg { flex: 1; border-radius: 18px; padding: 12px; text-align: center; background: #ffffff14; border: 3px solid #ffffff33; cursor: pointer; }
+  .egg.on { border-color: var(--gold); background: #ffc53322; } .egg .e { font-size: 54px; } .egg b { display: block; }
+  .pull { display: flex; gap: 10px; justify-content: center; }
+  .pity { text-align: center; font-size: 12px; opacity: .8; margin: 8px 0; }
+  .reveal { position: absolute; inset: 0; z-index: 80; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #0b0620f0; }
+  .reveal.on { display: flex; }
+  .rgrid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 700px; perspective: 800px; }
+  .flip { width: 110px; height: 150px; position: relative; transform-style: preserve-3d; transition: transform .5s; cursor: pointer; }
+  .flip.open { transform: rotateY(180deg); }
+  .flip > div { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid #fff; }
+  .flip .bk { background: repeating-linear-gradient(45deg, #7b5cff, #7b5cff 10px, #6a4be8 10px 20px); font-size: 40px; }
+  .flip .fr { transform: rotateY(180deg); background: linear-gradient(#ffffff22, #000a), var(--r); box-shadow: 0 0 30px var(--r); }
+  .flip .fr .e { font-size: 50px; } .flip .fr b { font-size: 12px; text-align: center; } .flip .fr small { font-size: 11px; }
+  .lb .r { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: #ffffff10; margin-bottom: 6px; font-weight: 800; }
+  .lb .r.me { background: linear-gradient(90deg, #7b5cff, #ff5ca8); } .lb .r .pos { width: 30px; text-align: center; font-size: 18px; } .lb .r .nm { flex: 1; }
+  .toast { position: absolute; left: 50%; top: 70px; transform: translate(-50%, -20px); z-index: 95; background: #fff; color: var(--dark); border-radius: 20px; padding: 8px 18px; font-weight: 800; opacity: 0; transition: .25s; white-space: nowrap; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); } .toast.bad { background: #ff3b5c; color: #fff; }
+  @container stage (min-height: 600px) { .joy, .act, .sm { zoom: 1.1; } }
+  @container stage (max-height: 450px) { .topbar, .offer, .evt { zoom: .78; } .joy, .act, .sm, .menuBtn { zoom: .8; } .rgrid { zoom: .8; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a topbar" id="topbar"></div>
+  <div class="a evt">
+    <div class="ib sh" data-app="home">🏝️<small id="tT"></small></div>
+    <div class="ib sh" data-app="pass">🎫<small>Сезон</small><span class="dot"></span></div>
+    <div class="ib sh" data-app="daily">📅<small>Награда</small><span class="dot"></span></div>
+  </div>
+  <div class="a offer sh" data-app="home"><div class="h">⏰ <span id="offerT">23:59:12</span></div><div class="c"><span class="e">🦈</span>Акула + 50💎<br><s>R$ 599</s> R$ 299</div></div>
+  <div class="a joy"></div>
+  <div class="a act sh" id="act"><div><span class="e">✂️</span>РАЗМИНИРОВАТЬ</div></div>
+  <div class="a sm s1 sh" id="pve"></div>
+  <div class="a sm s2 sh">🔫</div>
+  <div class="a sm s3 sh">📡</div>
+  <div class="a menuBtn sh" data-app="home">☰ МЕНЮ</div>
+
+  <div class="app" id="app">
+    <div class="ah"><button class="back" data-close>‹</button><h2 class="sh" id="appT"></h2><div class="sp"></div><div id="appRes" style="display:flex;gap:6px"></div></div>
+    <div class="ab" id="ab"></div>
+    <div class="tabbar" id="tabbar"></div>
+  </div>
+  <div class="reveal" id="reveal"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS } = BL;
+const $ = (s) => document.querySelector(s);
+const TABS = [['home', '🏠', 'Главная'], ['shop', '🛒', 'Магазин'], ['gacha', '🥚', 'Яйца'], ['pass', '🎫', 'Сезон'], ['daily', '📅', 'Бонусы'], ['rank', '🏆', 'Топ']];
+let tab = null, cat = 'tools', egg = 'egg1', pity = 23, passXp = 6, passPrem = false, dayIdx = 3, rstat = 'coins';
+const gotPass = new Set(['f1', 'f2', 'f3']), gotDay = new Set([0, 1, 2]);
+const PASS = Array.from({ length: 12 }, (_, i) => ({ lv: i + 1, free: ['🪙 500', '💎 5', '🥚', '🪙 2K', '💎 10', '🎟️', '🪙 5K', '🐶', '💎 25', '🪙 15K', '🦊', '👑'][i], prem: ['💎 20', '🛸', '🪙 10K', '🐲', '💎 50', '✖️2', '🧬', '🪙 50K', '🦈', '💎 100', '🤖', '👾'][i] }));
+
+function toast(m, ok = true) { const t = $('#toast'); t.textContent = m; t.className = 'toast on' + (ok ? '' : ' bad'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600); }
+const res = (k, plus) => `<div class="res sh">${CUR[k].icon} ${BL.fmt(S[k])}${plus ? `<span class="p" data-app="shopR">+</span>` : ''}</div>`;
+function hud() {
+  $('#topbar').innerHTML = `<div class="ava">🧑<b>Ур 14</b></div>${res('coins', 1)}${res('gems', 1)}${res('crypto')}<div class="sp"></div>
+    <div class="ib" data-app="rank">🏆</div><div class="ib" data-app="shop">🛒<span class="dot"></span></div><div class="ib" data-app="gacha">🥚<span class="dot"></span></div>`;
+  $('#pve').className = 'a sm s1 sh ' + (S.pve ? 'on' : 'off'); $('#pve').textContent = S.pve ? '🛡️' : '⚔️';
+  $('#appRes').innerHTML = res('coins') + res('gems') + `<div class="res sh" style="color:#9dffc7">R$ ${S.robux}</div>`;
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); const s = 86352 - Math.floor(performance.now() / 1000); $('#offerT').textContent = new Date(s * 1000).toISOString().slice(11, 19); }
+
+const PAGES = {
+  home: ['Главная', () => `<div class="banner"><span class="tmr">⏰ 23:59</span><span class="e">🦈</span><div><h3>СТАРТОВЫЙ НАБОР</h3><small>Катер «Акула» + 50 💎 + x2 на 1 час</small><br><br><button class="gbtn gold" data-don="gp2">R$ 299 <s style="opacity:.6">599</s></button></div></div>
+      <div class="banner" style="background:linear-gradient(120deg,#22d07a,#2a9dff)"><span class="e">🏝️</span><div><h3>ОСТРОВ СОКРОВИЩ</h3><small>Сундуки через ${BL.mmss(S.treasureAt - Date.now())}. Нужна лодка!</small></div></div>
+      <div class="cards">${[['shop', '🛒', 'Магазин'], ['gacha', '🥚', 'Яйца'], ['pass', '🎫', 'Сезон'], ['daily', '📅', 'Бонусы']].map(([k, e, n]) => `<div class="cd" style="--r:#ffffff55;cursor:pointer" data-tab="${k}"><div class="e">${e}</div><b>${n}</b></div>`).join('')}</div>`],
+  shop: ['Магазин', () => `<div class="seg">${Object.keys(CATS).map((k) => `<button class="${k === cat ? 'on' : ''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].name}</button>`).concat(`<button class="${cat === 'rbx' ? 'on' : ''}" data-cat="rbx">💎 Робуксы</button>`).join('')}</div>
+      <div class="cards">${cat === 'rbx' ? DONATE.map((d) => `<div class="cd" style="--r:var(--gold)"><div class="rl"></div><div class="e">${d.icon}</div><b>${d.name}</b><small>${d.give ? Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join('+') : d.desc}</small><button class="gbtn gold" data-don="${d.id}">${S.passes.has(d.id) ? '✔' : 'R$ ' + d.price}</button></div>`).join('')
+        : BL.byCat(cat).map((it) => { const own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id; return `<div class="cd" style="--r:${RARITY[it.rarity].color}"><div class="rl"></div><div class="e">${it.icon}</div><b>${it.name}</b>
+          <button class="gbtn ${eq ? 'gray' : own ? 'pri' : it.cur === 'robux' ? 'gold' : BL.canAfford(it) ? '' : 'gray'}" data-buy="${it.id}">${eq ? 'Надето' : own ? (it.cat === 'build' ? 'Есть' : 'Надеть') : BL.price(it)}</button></div>`; }).join('')}</div>`],
+  gacha: ['Яйца', () => { const e = EGGS.find((x) => x.id === egg);
+    return `<div class="eggs">${EGGS.map((x) => `<div class="egg ${x.id === egg ? 'on' : ''}" data-egg="${x.id}"><div class="e">${x.icon}</div><b>${x.name}</b><small>${Object.keys(x.pool).map((k) => PETS[k].icon).join('')}</small></div>`).join('')}</div>
+      <div class="pity">⭐ Гарантированный эпик через <b>${pity}</b> открытий · шансы: ${Object.keys(e.pool).map((k) => PETS[k].icon + e.pool[k] + '%').join(' ')}</div>
+      <div class="pull"><button class="gbtn" data-pull="1">Открыть x1 · ${BL.price(e)}</button><button class="gbtn gold" data-pull="10">x10 · ${e.cur === 'robux' ? 'R$ ' + e.price * 9 : CUR[e.cur].icon + BL.fmt(e.price * 9)} <small>(-10%)</small></button></div>
+      <div class="pity" style="margin-top:14px">Ваши петы (${S.pets.filter((p) => p.eq).length}/${S.petSlots}) — нажми, чтобы надеть</div>
+      <div class="cards" style="grid-template-columns:repeat(8,1fr)">${S.pets.map((p) => `<div class="cd" data-pet="${p.uid}" style="--r:${p.eq ? 'var(--ok)' : RARITY[PETS[p.key].rarity].color};cursor:pointer;padding:4px"><div class="e" style="font-size:28px">${PETS[p.key].icon}</div><small>x${PETS[p.key].mult}</small></div>`).join('')}</div>`; }],
+  pass: ['Сезон «Минная лихорадка»', () => `<div class="banner" style="background:linear-gradient(120deg,#7b5cff,#ff5ca8)"><span class="e">🎫</span><div><h3>Уровень ${passXp} / 12</h3><small>Разминируй мины — получай опыт сезона. Осталось 18 дней.</small></div>${passPrem ? '' : '<button class="gbtn gold" style="margin-left:auto" data-prem>Премиум · R$ 399</button>'}</div>
+      <div class="prog"><i style="width:${passXp / 12 * 100}%"></i></div>
+      <div class="rowlbl">🆓 Бесплатно</div><div class="pass">${PASS.map((p) => `<div class="lvl ${p.lv <= passXp ? 'done' : ''}"><div class="rw ${gotPass.has('f' + p.lv) ? 'got' : p.lv <= passXp ? 'claim' : ''}" data-pass="f${p.lv}">${p.free.split(' ')[0]}<small>${p.free.split(' ')[1] || ''}</small></div>
+        <div class="n">${p.lv}</div><div class="rw prem ${!passPrem ? 'lock' : gotPass.has('p' + p.lv) ? 'got' : p.lv <= passXp ? 'claim' : ''}" data-pass="p${p.lv}">${p.prem.split(' ')[0]}<small>${p.prem.split(' ')[1] || ''}</small></div></div>`).join('')}</div><div class="rowlbl">👑 Премиум</div>`],
+  daily: ['Ежедневные награды', () => `<div class="banner" style="background:linear-gradient(120deg,#ffb347,#ff5ca8)"><span class="e">📅</span><div><h3>Заходи каждый день!</h3><small>7-й день — эпическое яйцо. Пропуск сбрасывает серию.</small></div></div>
+      <div class="daily">${['🪙 500', '💎 5', '🪙 1K', '🥚 x1', '💎 15', '🪙 5K', '💣 Эпик-яйцо'].map((r, i) => `<div class="day ${i === 6 ? 'd7' : ''} ${gotDay.has(i) ? 'got' : i === dayIdx ? 'today' : ''}" data-day="${i}">День ${i + 1}<span class="e">${r.split(' ')[0]}</span>${r.split(' ').slice(1).join(' ')}${gotDay.has(i) ? '<br>✔' : ''}</div>`).join('')}</div>`],
+  rank: ['Топ игроков', () => `<div class="seg">${STATS.map((s) => `<button class="${s.id === rstat ? 'on' : ''}" data-rstat="${s.id}">${s.name}</button>`).join('')}</div>
+      <div class="lb">${RANKS[rstat].slice(0, 10).map((r, i) => `<div class="r ${r.me ? 'me' : ''}"><span class="pos">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="nm">${r.name}</span><span>${BL.fmt(r.value)}</span></div>`).join('')}</div>`],
+};
+function openApp(t) {
+  if (t === 'shopR') { cat = 'rbx'; t = 'shop'; }
+  tab = t; $('#app').classList.add('on');
+  $('#tabbar').innerHTML = TABS.map(([k, e, n]) => `<div class="tb ${k === t ? 'on' : ''}" data-tab="${k}"><span class="e">${e}</span>${n}${['pass', 'daily', 'gacha'].includes(k) ? '<span class="dot"></span>' : ''}</div>`).join('');
+  render();
+}
+function render() { if (!tab) return; const [n, f] = PAGES[tab]; $('#appT').textContent = n; const st = $('#ab').scrollTop; $('#ab').innerHTML = f(); $('#ab').scrollTop = st; }
+function closeApp() { tab = null; $('#app').classList.remove('on'); }
+function pull(n) {
+  const r = BL.hatch(egg, n === 10 ? 9 : 1); if (!r.ok) return toast(r.msg, false);
+  const pets = r.pets.slice();
+  if (n === 10) { const x = BL.hatch(egg, 0); const bonus = Object.assign({}, PETS.fox, { key: 'fox' }); pets.push(bonus); BL.S.pets.push({ uid: Date.now(), key: 'fox', eq: false }); }
+  pity = Math.max(0, pity - pets.length);
+  const order = Object.keys(RARITY);
+  $('#reveal').innerHTML = `<h2 class="sh" style="margin:0">Нажми на карты!</h2><div class="rgrid">${pets.map((p) => `<div class="flip" style="--r:${RARITY[p.rarity].color}"><div class="bk">${EGGS.find((e) => e.id === egg).icon}</div><div class="fr"><span class="e">${p.icon}</span><b>${p.name}</b><small>${RARITY[p.rarity].name} · x${p.mult}</small></div></div>`).join('')}</div>
+    <div style="display:flex;gap:10px"><button class="gbtn pri" data-openall>Открыть все</button><button class="gbtn" data-revclose>Готово</button></div>`;
+  $('#reveal').classList.add('on');
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-app],[data-tab],[data-close],[data-cat],[data-buy],[data-don],[data-egg],[data-pull],[data-pet],[data-pass],[data-prem],[data-day],[data-rstat],[data-openall],[data-revclose],.flip,#pve,#act');
+  if (!t) return; const d = t.dataset;
+  if (d.app) openApp(d.app);
+  else if (d.tab) openApp(d.tab);
+  else if ('close' in d) closeApp();
+  else if (d.cat) { cat = d.cat; render(); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg, r.ok); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); }
+  else if (d.egg) { egg = d.egg; render(); }
+  else if (d.pull) pull(+d.pull);
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if ('prem' in d) { if (S.robux < 399) return toast('Не хватает R$', false); S.robux -= 399; passPrem = true; toast('Премиум-пропуск активирован!'); render(); hud(); }
+  else if (d.pass) { const lv = +d.pass.slice(1); if (d.pass[0] === 'p' && !passPrem) return toast('Нужен премиум-пропуск', false); if (lv > passXp) return toast('Достигни уровня ' + lv, false); if (gotPass.has(d.pass)) return; gotPass.add(d.pass); BL.earn(200); toast('Награда получена: ' + PASS[lv - 1][d.pass[0] === 'p' ? 'prem' : 'free']); }
+  else if (d.day) { const i = +d.day; if (i !== dayIdx) return toast(i < dayIdx ? 'Уже получено' : 'Приходи завтра!', i < dayIdx); gotDay.add(i); dayIdx = 99; BL.earn(1000); toast('День ' + (i + 1) + ': награда получена!'); }
+  else if (d.rstat) { rstat = d.rstat; render(); }
+  else if ('openall' in d) document.querySelectorAll('.flip').forEach((f, i) => setTimeout(() => f.classList.add('open'), i * 120));
+  else if ('revclose' in d) { $('#reveal').classList.remove('on'); render(); }
+  else if (t.classList.contains('flip')) t.classList.add('open');
+  else if (t.id === 'pve') toast(BL.togglePvE() ? '🛡️ Мирный режим' : '⚔️ PvP включён', true);
+  else if (t.id === 'act') { BL.earn(120); passXp = Math.min(12, passXp + (Math.random() < .3 ? 1 : 0)); toast('+120 🪙  +опыт сезона'); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#reveal').classList.remove('on'); closeApp(); } });
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (w !== 'hatch') render(); });
+hud(); tick();
+</script>
+</body>
+</html>

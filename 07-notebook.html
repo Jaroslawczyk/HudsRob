@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тетрадка в клетку</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Neucha', 'Comic Sans MS', cursive; color: #2b2b3a; font-size: 17px; --ink: #2b2b3a; --blue: #2d5bd7; --red: #e0352b; --paper: #fdfbf3; }
+  .hand { font-family: 'Caveat', cursive; font-weight: 700; }
+  .sk { border: 2.5px solid var(--ink); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+  .sk2 { border: 2.5px solid var(--ink); border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px; }
+  .grid-paper { background-color: var(--paper); background-image: linear-gradient(#9ec5ff55 1px, transparent 1px), linear-gradient(90deg, #9ec5ff55 1px, transparent 1px); background-size: 18px 18px; }
+  .a { position: absolute; z-index: 5; }
+  .sticky { left: 16px; top: 16px; width: 200px; padding: 14px 14px 10px; background: #fff27a; transform: rotate(-3deg); box-shadow: 3px 6px 10px #0004; }
+  .sticky::before { content: ''; position: absolute; top: -12px; left: 60px; width: 80px; height: 24px; background: #ffffffaa; transform: rotate(2deg); border: 1px solid #0001; }
+  .sticky .r { display: flex; justify-content: space-between; font-size: 20px; border-bottom: 1.5px dashed #0003; padding: 2px 0; }
+  .sticky .r b { font-family: 'Caveat'; font-size: 26px; line-height: 1; }
+  .todo { right: 16px; top: 16px; width: 250px; padding: 12px 16px; transform: rotate(1.5deg); box-shadow: 3px 6px 10px #0004;
+    background: var(--paper) repeating-linear-gradient(transparent 0 25px, #9ec5ff 25px 26px); border-left: 3px double var(--red); }
+  .todo h4 { margin: 0 0 4px; font-family: 'Caveat'; font-size: 26px; }
+  .todo .q { display: flex; gap: 8px; line-height: 26px; } .todo .q.done span { text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; }
+  .todo .bx { width: 18px; height: 18px; margin-top: 4px; flex: none; position: relative; }
+  .todo .q.done .bx::after { content: '✓'; position: absolute; left: 1px; top: -10px; color: var(--red); font-size: 26px; font-family: 'Caveat'; }
+  .timer { left: 50%; top: 14px; transform: translateX(-50%) rotate(-1deg); padding: 6px 16px; background: var(--paper); font-size: 20px; }
+  .timer b { font-family: 'Caveat'; font-size: 28px; color: var(--red); }
+  .bar { left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 12px; }
+  .bar .s { width: 64px; height: 64px; background: var(--paper); display: grid; place-items: center; font-size: 30px; cursor: pointer; position: relative; }
+  .bar .s.on { background: #fff27a; transform: rotate(-4deg) translateY(-6px); }
+  .bar .s i { position: absolute; top: -2px; left: 5px; font-family: 'Caveat'; font-size: 18px; font-style: normal; }
+  .pve { left: 16px; bottom: 16px; padding: 8px 14px; background: var(--paper); cursor: pointer; font-size: 20px; display: flex; gap: 12px; align-items: center; }
+  .pve span { padding: 0 6px; position: relative; } .pve span.on::after { content: ''; position: absolute; inset: -6px -8px; border: 2.5px solid var(--red); border-radius: 50% 45% 55% 50%; transform: rotate(-4deg); }
+  .bookBtn { right: 16px; bottom: 16px; padding: 10px 16px; background: #ffd0e0; cursor: pointer; font-size: 22px; transform: rotate(2deg); }
+  .bookBtn:hover { transform: rotate(-2deg) scale(1.05); }
+  .zina { left: 230px; top: 120px; width: 230px; padding: 12px 14px; background: #c9f5c4; transform: rotate(2deg); box-shadow: 3px 6px 10px #0004; font-size: 16px; }
+  .zina b { font-family: 'Caveat'; font-size: 22px; } .zina .nx { float: right; color: var(--blue); cursor: pointer; text-decoration: underline wavy; }
+  .zina svg { position: absolute; left: -110px; top: 30px; width: 110px; height: 60px; }
+  .mine { left: 58%; top: 52%; cursor: pointer; text-align: center; font-size: 18px; }
+  .mine .c { width: 54px; height: 54px; margin: 0 auto; border: 3px dashed var(--red); border-radius: 50%; display: grid; place-items: center; font-size: 26px; background: #fff8; animation: wob 1.5s ease-in-out infinite; }
+  @keyframes wob { 50% { transform: rotate(10deg) scale(1.08); } }
+  .scrib { position: absolute; z-index: 30; font-family: 'Caveat'; font-size: 34px; color: var(--blue); pointer-events: none; animation: rise 1s ease-out forwards; }
+  @keyframes rise { to { transform: translateY(-60px) rotate(-8deg); opacity: 0; } }
+  /* book */
+  .desk { position: absolute; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: #0006; }
+  .desk.on { display: flex; }
+  .book { position: relative; width: 960px; height: 600px; display: flex; perspective: 2000px; animation: drop .35s ease-out; }
+  @keyframes drop { from { transform: translateY(40px) rotate(-3deg); opacity: 0; } }
+  .page { flex: 1; padding: 26px 30px; position: relative; overflow: hidden; box-shadow: inset 0 0 30px #0001; }
+  .page.l { border-radius: 10px 0 0 10px; box-shadow: inset -20px 0 30px -20px #0004; }
+  .page.r { border-radius: 0 10px 10px 0; box-shadow: inset 20px 0 30px -20px #0004; }
+  .spiral { position: absolute; left: 50%; top: 20px; bottom: 20px; width: 30px; margin-left: -15px; z-index: 3;
+    background: radial-gradient(circle at 50% 50%, transparent 5px, #888 5px 7px, transparent 7px) 0 0 / 30px 26px; }
+  .flipper { position: absolute; left: 50%; top: 0; width: 50%; height: 100%; transform-origin: left center; z-index: 4; border-radius: 0 10px 10px 0; pointer-events: none; display: none; }
+  .flipper.go { display: block; animation: flip .5s ease-in-out forwards; }
+  @keyframes flip { from { transform: rotateY(0); } to { transform: rotateY(-180deg); } }
+  .marks { position: absolute; right: -54px; top: 30px; display: flex; flex-direction: column; gap: 8px; }
+  .mk { width: 70px; padding: 8px 6px 8px 22px; background: var(--c); border: 2px solid var(--ink); border-left: 0; border-radius: 0 10px 10px 0; cursor: pointer; font-size: 15px; transition: transform .15s; }
+  .mk:hover, .mk.on { transform: translateX(10px); }
+  .close { position: absolute; left: -16px; top: -16px; width: 46px; height: 46px; border-radius: 50%; background: #ffd0e0; font-size: 22px; cursor: pointer; z-index: 6; display: grid; place-items: center; }
+  .page h2 { margin: 0 0 10px; font-family: 'Caveat'; font-size: 40px; line-height: 1; } .page h2 u { text-decoration-color: var(--red); text-decoration-thickness: 3px; }
+  .ln { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin: 4px 0; cursor: pointer; font-size: 19px; }
+  .ln:hover { background: #fff27a88; } .ln.on { background: #fff27a; }
+  .ln .e { font-size: 24px; } .ln .n { flex: 1; } .ln .p { font-family: 'Caveat'; font-size: 22px; color: var(--blue); }
+  .ln.own .n { text-decoration: line-through wavy #2d5bd788; }
+  .cats { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .ct { padding: 2px 10px; cursor: pointer; font-size: 16px; } .ct.on { background: #c9f5c4; }
+  .drawing { height: 200px; display: grid; place-items: center; font-size: 110px; position: relative; margin-bottom: 8px; }
+  .drawing::after { content: ''; position: absolute; width: 190px; height: 190px; border: 2.5px solid var(--ink); border-radius: 50% 45% 52% 48% / 48% 52% 45% 50%; transform: rotate(-6deg); }
+  .pr { font-size: 18px; line-height: 1.5; }
+  .scale { display: flex; gap: 4px; align-items: center; } .scale i { width: 16px; height: 16px; border: 2px solid var(--ink); border-radius: 3px 6px 4px 5px; }
+  .scale i.f { background: repeating-linear-gradient(45deg, var(--blue) 0 2px, transparent 2px 5px); }
+  .pen { margin-top: 12px; padding: 8px 20px; font: 26px 'Caveat'; font-weight: 700; background: #c9f5c4; cursor: pointer; display: inline-block; }
+  .pen.rbx { background: #ffe0a3; } .pen.no { opacity: .5; }
+  .stamp { position: absolute; right: 50px; top: 140px; font-family: 'Caveat'; font-size: 52px; color: var(--red); border: 4px solid var(--red); border-radius: 50%; padding: 10px 24px;
+    transform: rotate(-16deg) scale(0); transition: transform .25s cubic-bezier(.3,1.8,.5,1); pointer-events: none; z-index: 5; }
+  .stamp.on { transform: rotate(-16deg) scale(1); }
+  .album { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .ph { background: #fff; padding: 6px 6px 18px; box-shadow: 2px 3px 6px #0003; text-align: center; font-size: 34px; cursor: pointer; transform: rotate(var(--t)); position: relative; }
+  .ph small { display: block; font-size: 13px; } .ph.eq::before { content: '♥'; position: absolute; top: -8px; right: -4px; color: var(--red); font-size: 22px; }
+  .hatchsvg { width: 220px; height: 200px; } .hatchsvg path { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 900; stroke-dashoffset: 900; }
+  .hatchsvg.go path { animation: draw 1.4s ease-out forwards; } @keyframes draw { to { stroke-dashoffset: 0; } }
+  .tbl { width: 100%; font-size: 19px; border-collapse: collapse; } .tbl td { padding: 3px 4px; border-bottom: 1.5px dashed #0003; } .tbl tr.me td { background: #fff27a; } .tbl td:last-child { text-align: right; font-family: 'Caveat'; font-size: 24px; }
+  .toast { position: absolute; left: 50%; top: 90px; z-index: 90; transform: translateX(-50%) rotate(-2deg) scale(0); background: #fff27a; padding: 8px 18px; font-size: 22px; transition: .2s; white-space: nowrap; box-shadow: 3px 5px 8px #0004; }
+  .toast.on { transform: translateX(-50%) rotate(-2deg) scale(1); } .toast.bad { background: #ffc4c4; }
+  @container stage (max-height: 450px) { .sticky, .todo, .timer, .bar, .pve, .bookBtn, .zina, .mine { zoom: .62; } .book { zoom: .6; } .zina { left: 200px; top: 90px; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a sticky" id="sticky"></div>
+  <div class="a timer sk">🏝️ остров сокровищ через <b id="tT"></b> · 🧟 рейд <b id="tR"></b></div>
+  <div class="a todo" id="todo"></div>
+  <div class="a zina sk" id="zina"><svg viewBox="0 0 110 60"><path d="M108 8 C 70 0, 40 30, 8 40 M8 40 l 14 -12 M8 40 l 18 4" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/></svg><b>Бабушка Зина:</b> <span id="zinaT"></span><br><span class="nx" id="zinaN">дальше →</span></div>
+  <div class="a mine" id="mine"><div class="c">💣</div>тык! (E)</div>
+  <div class="a pve sk2" id="pve"></div>
+  <div class="a bar" id="bar"></div>
+  <div class="a bookBtn sk" data-book="shop">📓 Блокнот (B)</div>
+
+  <div class="desk" id="desk"><div class="book" id="book">
+    <div class="close sk" data-x>✕</div>
+    <div class="page l grid-paper" id="pl"></div><div class="spiral"></div><div class="page r grid-paper" id="pr"></div>
+    <div class="flipper grid-paper" id="flipper"></div>
+    <div class="marks" id="marks"></div>
+    <div class="stamp" id="stamp">КУПЛЕНО!</div>
+  </div></div>
+  <div class="toast sk" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS, QUESTS } = BL;
+const $ = (s) => document.querySelector(s);
+const MARKS = [['shop', 'Лавка', '#c9f5c4'], ['pets', 'Петы', '#ffd0e0'], ['donate', 'R$', '#ffe0a3'], ['rank', 'Топ', '#cfe3ff'], ['notes', 'Заметки', '#fff27a']];
+let pg = null, cat = 'tools', sel = 'cut3', egg = 'egg1', rstat = 'coins', slot = 0, step = 0;
+const TUT = ['видишь мину? Тыкни в неё — снимешь и получишь монетки!', 'Монеты копятся на листочке слева вверху.', 'Открой блокнот (справа внизу) — там моя лавка.', 'Список дел справа — за галочки дают награды. Удачи, внучок!'];
+
+function toast(m, ok = true) { const t = $('#toast'); t.textContent = m; t.className = 'toast sk on' + (ok ? '' : ' bad'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600); }
+function hud() {
+  $('#sticky').innerHTML = ['coins', 'gems', 'crypto', 'minerals'].map((k) => `<div class="r">${CUR[k].icon} ${CUR[k].name}<b>${BL.fmt(S[k])}</b></div>`).join('');
+  $('#todo').innerHTML = `<h4>Список дел ✎</h4>${QUESTS.map((q) => `<div class="q ${q.done >= q.need ? 'done' : ''}"><div class="bx sk"></div><span>${q.text} (${q.done}/${q.need}) → ${q.reward}</span></div>`).join('')}`;
+  $('#pve').innerHTML = `<span class="${S.pve ? 'on' : ''}">☮ мир</span><span class="${S.pve ? '' : 'on'}">⚔ война</span>`;
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#bar').innerHTML = ids.map((id, i) => `<div class="s ${i % 2 ? 'sk' : 'sk2'} ${i === slot ? 'on' : ''}" data-slot="${i}"><i>${i + 1}</i>${id === 'hammer' ? '🔨' : BL.item(id).icon}</div>`).join('');
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+function tut() { if (step >= TUT.length) return $('#zina').remove(); $('#zinaT').textContent = TUT[step]; $('#zinaN').textContent = step === TUT.length - 1 ? 'поняла, спасибо ✕' : 'дальше →'; }
+
+const scale = (v) => `<span class="scale">${Array.from({ length: 5 }, (_, i) => `<i class="${i < Math.round(v / 20) ? 'f' : ''}"></i>`).join('')}</span>`;
+const PG = {
+  shop() {
+    const it = BL.item(sel), own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id;
+    return [`<h2><u>Лавка Бабушки Зины</u></h2><div class="cats">${Object.keys(CATS).map((k) => `<span class="ct sk ${k === cat ? 'on' : ''}" data-cat="${k}">${CATS[k].name}</span>`).join('')}</div>
+      ${BL.byCat(cat).map((x) => `<div class="ln sk2 ${x.id === sel ? 'on' : ''} ${S.owned.has(x.id) ? 'own' : ''}" data-sel="${x.id}"><span class="e">${x.icon}</span><span class="n">${x.name}</span><span class="p">${S.owned.has(x.id) ? 'есть ✓' : BL.price(x)}</span></div>`).join('')}`,
+      `<div class="drawing">${it.icon}</div><h2>${it.name}</h2><div class="pr"><i>${RARITY[it.rarity].name}.</i> ${it.desc}<br>
+      ${it.cat === 'build' ? 'доход ' + scale(it.stats.power) : `скорость ${scale(it.stats.speed)} мощь ${scale(it.stats.power)} дальность ${scale(it.stats.range)}`}</div>
+      <span class="pen sk ${it.cur === 'robux' ? 'rbx' : ''} ${!own && !BL.canAfford(it) ? 'no' : ''}" data-buy="${it.id}">${eq ? 'уже в руках ✓' : own ? (it.cat === 'build' ? 'построено ✓' : 'взять в руки') : 'купить за ' + BL.price(it)}</span>`];
+  },
+  pets() {
+    const e = EGGS.find((x) => x.id === egg);
+    return [`<h2><u>Альбом петов</u></h2><p>Тыкни, чтобы взять с собой (${S.pets.filter((p) => p.eq).length}/${S.petSlots}) · бонус x${BL.petMult().toFixed(2)}</p>
+      <div class="album">${S.pets.map((p, i) => `<div class="ph ${p.eq ? 'eq' : ''}" style="--t:${(i % 3 - 1) * 4}deg" data-pet="${p.uid}">${PETS[p.key].icon}<small>${PETS[p.key].name}</small></div>`).join('')}</div>`,
+      `<h2>Высиживаем…</h2><div class="cats">${EGGS.map((x) => `<span class="ct sk ${x.id === egg ? 'on' : ''}" data-egg="${x.id}">${x.icon} ${x.name}</span>`).join('')}</div>
+      <div style="text-align:center"><svg class="hatchsvg" id="hs" viewBox="0 0 220 200"><path d="M110 20 C 50 20, 40 120, 60 160 C 80 195, 140 195, 160 160 C 180 120, 170 20, 110 20 Z"/><path d="M60 110 l 20 -15 l 15 18 l 18 -20 l 15 18 l 18 -16 l 16 14"/></svg><div id="hatchOut" style="font-size:20px">шансы: ${Object.keys(e.pool).map((k) => PETS[k].icon + e.pool[k] + '%').join(', ')}</div></div>
+      <span class="pen sk ${e.cur === 'robux' ? 'rbx' : ''}" data-hatch>высидеть за ${BL.price(e)}</span>`];
+  },
+  donate() {
+    return [`<h2><u>Копилка R$</u></h2><p>Демо-баланс: R$ ${S.robux}</p>${DONATE.filter((d) => d.kind === 'pack').map((d) => `<div class="ln sk2" data-don="${d.id}"><span class="e">${d.icon}</span><span class="n">${d.name}<br><small>${Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ')}</small></span><span class="p">R$ ${d.price}</span></div>`).join('')}`,
+      `<h2>Навсегда</h2>${DONATE.filter((d) => d.kind !== 'pack').map((d) => `<div class="ln sk2 ${S.passes.has(d.id) ? 'own' : ''}" data-don="${d.id}"><span class="e">${d.icon}</span><span class="n">${d.name}<br><small>${d.desc}</small></span><span class="p">${S.passes.has(d.id) ? '✓' : 'R$ ' + d.price}</span></div>`).join('')}`];
+  },
+  rank() {
+    return [`<h2><u>Кто круче</u></h2><div class="cats">${STATS.map((s) => `<span class="ct sk ${s.id === rstat ? 'on' : ''}" data-rstat="${s.id}">${s.name}</span>`).join('')}</div>
+      <table class="tbl">${RANKS[rstat].slice(0, 12).map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${i + 1}.</td><td>${r.name}</td><td>${BL.fmt(r.value)}</td></tr>`).join('')}</table>`,
+      `<h2>Мой прогресс</h2><div class="pr">Я на <b>${S.rank}</b> месте по монетам.<br>До 6-го места: ещё ${BL.fmt(RANKS.coins[5].value - RANKS.coins[6].value)} 🪙<br><br>Мин снято: ${S.mines}<br>Зомби побеждено: ${S.kills}<br>Петов: ${S.pets.length}</div>
+      <div class="drawing" style="font-size:80px">🏆</div>`];
+  },
+  notes() {
+    return [`<h2><u>Шпаргалка</u></h2>${Object.keys(CUR).filter((k) => k !== 'robux').map((k) => `<div class="pr">${CUR[k].icon} <b>${CUR[k].name}</b> — ${{ coins: 'с мин, на лавку и стройку', gems: 'прокачка петов', crypto: 'майнинг-фермы, крадут в рейдах!', minerals: 'каменоломня, меняй на бафы' }[k]}</div>`).join('')}
+      <br><div class="pr">Зоны мин: ${BL.ZONES.map((z) => `<span style="color:${z.color};text-shadow:0 0 1px #000">■</span> ${z.name} — ${z.reward}🪙`).join('<br>')}</div>`,
+      `<h2>Настройки</h2><div class="ln sk2" data-opt>🔊 Скримеры: <b>вкл</b></div><div class="ln sk2" data-opt>🎵 Музыка: <b>вкл</b></div><div class="ln sk2" data-tut>👵 Пройти обучение заново</div>`];
+  },
+};
+function openBook(p, animate = true) {
+  const was = pg; pg = p; $('#desk').classList.add('on');
+  $('#marks').innerHTML = MARKS.map(([k, n, c]) => `<div class="mk ${k === p ? 'on' : ''}" style="--c:${c}" data-book="${k}">${n}</div>`).join('');
+  if (was && was !== p && animate) { const f = $('#flipper'); f.innerHTML = $('#pr').innerHTML; f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); setTimeout(() => f.classList.remove('go'), 500); }
+  render();
+}
+function render() { if (!pg) return; const [l, r] = PG[pg](); $('#pl').innerHTML = l; $('#pr').innerHTML = r; }
+function closeBook() { pg = null; $('#desk').classList.remove('on'); }
+function stamp(t) { const s = $('#stamp'); s.textContent = t; s.classList.add('on'); setTimeout(() => s.classList.remove('on'), 900); }
+function scribble(txt, x, y) { const s = document.createElement('div'); s.className = 'scrib'; s.textContent = txt; s.style.left = x + 'px'; s.style.top = y + 'px'; $('#stage').append(s); setTimeout(() => s.remove(), 1000); }
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-book],[data-x],[data-cat],[data-sel],[data-buy],[data-egg],[data-hatch],[data-pet],[data-don],[data-rstat],[data-slot],[data-opt],[data-tut],#pve,#mine,#zinaN');
+  if (!t) return; const d = t.dataset;
+  if (d.book) openBook(d.book);
+  else if ('x' in d) closeBook();
+  else if (d.cat) { cat = d.cat; sel = BL.byCat(cat)[1].id; render(); }
+  else if (d.sel) { sel = d.sel; render(); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg, r.ok); if (r.ok && !r.equipped) stamp('КУПЛЕНО!'); }
+  else if (d.egg) { egg = d.egg; render(); }
+  else if ('hatch' in d) {
+    const r = BL.hatch(egg); if (!r.ok) return toast(r.msg, false); const p = r.pets[0];
+    $('#hs').classList.add('go'); $('#hatchOut').textContent = 'рисую…';
+    setTimeout(() => { $('#hs').outerHTML = `<div class="drawing" style="font-size:96px">${p.icon}</div>`; $('#hatchOut').innerHTML = `<b>${p.name}</b> — ${RARITY[p.rarity].name}, x${p.mult}`; stamp(RARITY[p.rarity].name.toUpperCase() + '!'); setTimeout(() => { const keep = $('#pr').innerHTML; render(); $('#pr').innerHTML = keep; }, 50); }, 1500);
+  }
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); if (r.ok) stamp('ОПЛАЧЕНО'); }
+  else if (d.rstat) { rstat = d.rstat; render(); }
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if ('opt' in d) { const b = t.querySelector('b'); b.textContent = b.textContent === 'вкл' ? 'выкл' : 'вкл'; }
+  else if ('tut' in d) { closeBook(); step = 0; if (!$('#zina')) location.reload(); else tut(); }
+  else if (t.id === 'pve') toast(BL.togglePvE() ? 'Мир! ☮' : 'Война! ⚔', true);
+  else if (t.id === 'mine') { BL.earn(120); BL.QUESTS[0].done = Math.min(10, BL.QUESTS[0].done + 1); hud(); scribble('+120 🪙', 740, 330); if (step === 0) { step++; tut(); } }
+  else if (t.id === 'zinaN') { step++; tut(); }
+});
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'escape') closeBook(); else if (k === 'b' || k === 'и') pg ? closeBook() : openBook('shop'); else if (k === 'e' || k === 'у') $('#mine').click(); else if (k >= '1' && k <= '5') { slot = +k - 1; hud(); }
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (w !== 'hatch' && w !== 'earn') render(); });
+hud(); tick(); tut();
+</script>
+</body>
+</html>

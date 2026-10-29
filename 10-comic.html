@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Комикс БУМ!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Pangolin&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Pangolin', 'Comic Sans MS', cursive; color: #111; font-size: 16px; --y: #ffe11a; --r: #ff2e3b; --b: #1fa3ff; --g: #29d16b; --pk: #ff6fc0; }
+  .M { font-family: 'Rubik Mono One', sans-serif; text-transform: uppercase; }
+  .ht { background-image: radial-gradient(#0003 1.5px, transparent 1.6px); background-size: 8px 8px; }
+  .a { position: absolute; z-index: 5; }
+  .cap { background: var(--y); border: 3px solid #111; box-shadow: 4px 4px 0 #111; padding: 6px 12px; }
+  .caps { left: 14px; top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .caps .cap { font-size: 15px; } .caps .cap b { font-family: 'Rubik Mono One'; font-size: 18px; }
+  .caps .lead { font-family: 'Rubik Mono One'; font-size: 11px; background: #fff; }
+  .narr { left: 50%; top: 14px; transform: translateX(-50%) rotate(-1deg); font-size: 15px; } .narr b { font-family: 'Rubik Mono One'; color: var(--r); }
+  .bub { position: relative; background: #fff; border: 3px solid #111; border-radius: 50% / 40%; padding: 14px 20px; text-align: center; cursor: pointer; transition: transform .12s; }
+  .bub:hover { transform: scale(1.08) rotate(-3deg); }
+  .bub::after { content: ''; position: absolute; bottom: -16px; left: 30%; border: 10px solid transparent; border-top: 16px solid #111; transform: skewX(-20deg); }
+  .side { right: 14px; top: 100px; display: flex; flex-direction: column; gap: 22px; align-items: flex-end; }
+  .side .bub { font-family: 'Rubik Mono One'; font-size: 12px; min-width: 120px; }
+  .side .bub .e { font-size: 24px; display: block; font-family: system-ui; }
+  .pve { left: 14px; bottom: 14px; padding: 10px 16px; cursor: pointer; transform: rotate(-2deg); background: var(--g); }
+  .pve.off { background: var(--r); color: #fff; }
+  .pve b { font-family: 'Rubik Mono One'; font-size: 16px; display: block; }
+  .strip { left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; border: 4px solid #111; background: #111; gap: 4px; box-shadow: 5px 5px 0 #0006; }
+  .strip .p { width: 66px; height: 62px; background: #fff; display: grid; place-items: center; font-size: 28px; cursor: pointer; position: relative; }
+  .strip .p.on { background: var(--y); } .strip .p i { position: absolute; top: 0; left: 3px; font: 10px 'Rubik Mono One'; font-style: normal; }
+  .open { left: 50%; bottom: 96px; transform: translateX(-50%); font-family: 'Rubik Mono One'; font-size: 13px; cursor: pointer; background: var(--pk); color: #fff; border: 3px solid #111; padding: 8px 16px; box-shadow: 4px 4px 0 #111; }
+  .wire-hint { left: 55%; top: 44%; font-size: 15px; padding: 10px 16px; }
+  .fx { position: absolute; z-index: 95; pointer-events: none; font-family: 'Rubik Mono One'; font-size: 60px; color: var(--y); -webkit-text-stroke: 3px #111; paint-order: stroke fill;
+    padding: 40px 50px; background: var(--r); clip-path: polygon(50% 0, 61% 30%, 98% 18%, 72% 45%, 100% 65%, 66% 66%, 72% 100%, 50% 75%, 26% 100%, 32% 68%, 0 70%, 26% 46%, 2% 18%, 38% 30%);
+    animation: fx .9s cubic-bezier(.3,1.6,.5,1) forwards; }
+  @keyframes fx { 0% { transform: scale(0) rotate(-20deg); } 30% { transform: scale(1) rotate(-6deg); } 80% { opacity: 1; } 100% { transform: scale(1.1) rotate(-6deg); opacity: 0; } }
+  .shake { animation: shk .4s; } @keyframes shk { 25% { transform: translate(-10px, 6px); } 50% { transform: translate(8px, -6px); } 75% { transform: translate(-6px, -4px); } }
+  /* comic page */
+  .page { position: absolute; inset: 0; z-index: 50; display: none; background: #f7f1e1; padding: 14px; }
+  .page.on { display: block; }
+  .grid { height: 100%; display: grid; gap: 12px; grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pn { border: 4px solid #111; background: var(--c, #fff); position: relative; overflow: hidden; cursor: pointer; transition: transform .15s; box-shadow: 5px 5px 0 #111; }
+  .pn:hover { transform: rotate(-1deg) scale(1.02); }
+  .pn .ttl { position: absolute; left: -4px; top: -4px; background: var(--y); border: 3px solid #111; padding: 4px 10px; font-family: 'Rubik Mono One'; font-size: 14px; z-index: 2; }
+  .pn .art { position: absolute; inset: 0; display: grid; place-items: center; font-size: 90px; }
+  .pn .say { position: absolute; right: 12px; bottom: 16px; max-width: 70%; font-size: 15px; padding: 8px 12px; cursor: inherit; }
+  .pn.big { grid-row: span 2; }
+  .zoom { position: absolute; inset: 14px; z-index: 60; border: 5px solid #111; background: #fff; box-shadow: 8px 8px 0 #111; display: none; flex-direction: column; animation: zm .3s cubic-bezier(.3,1.5,.5,1); }
+  .zoom.on { display: flex; } @keyframes zm { from { transform: scale(.5) rotate(-4deg); opacity: 0; } }
+  .zh { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 4px solid #111; background: var(--c); }
+  .zh h2 { margin: 0; font-family: 'Rubik Mono One'; font-size: 24px; } .zh .sp { flex: 1; }
+  .cb { font-family: 'Rubik Mono One'; font-size: 12px; border: 3px solid #111; background: #fff; padding: 8px 12px; cursor: pointer; box-shadow: 3px 3px 0 #111; }
+  .cb:active { transform: translate(3px, 3px); box-shadow: none; } .cb.on { background: var(--y); } .cb.go { background: var(--g); } .cb.no { background: #ddd; color: #777; } .cb.rbx { background: var(--b); color: #fff; }
+  .zb { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 340px; }
+  .cells { overflow: auto; padding: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start; }
+  .cell { border: 3px solid #111; padding: 10px; text-align: center; cursor: pointer; background: #fff; position: relative; }
+  .cell.sel { background: var(--y); transform: rotate(-2deg); box-shadow: 4px 4px 0 #111; } .cell .e { font-size: 44px; } .cell b { display: block; font-size: 15px; } .cell small { font-family: 'Rubik Mono One'; font-size: 10px; }
+  .cell.own::after { content: 'ЕСТЬ!'; position: absolute; top: 4px; right: -6px; font-family: 'Rubik Mono One'; font-size: 10px; background: var(--g); border: 2px solid #111; padding: 1px 4px; transform: rotate(12deg); }
+  .talk { border-left: 4px solid #111; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: #fff9db; }
+  .talk .zina { font-size: 70px; text-align: center; line-height: 1; }
+  .talk .bub { cursor: default; font-size: 16px; text-align: left; border-radius: 30px; } .talk .bub:hover { transform: none; }
+  .talk .bub::after { left: 50%; bottom: auto; top: 100%; }
+  .talk .bub.up::after { top: auto; bottom: 100%; border-top: 0; border-bottom: 16px solid #111; }
+  .seq { display: flex; gap: 10px; padding: 14px; justify-content: center; }
+  .fr3 { width: 240px; height: 230px; border: 4px solid #111; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-size: 90px; box-shadow: 4px 4px 0 #111; }
+  .fr3 .cp { position: absolute; top: -4px; left: -4px; font-family: 'Rubik Mono One'; font-size: 11px; background: var(--y); border: 3px solid #111; padding: 3px 6px; }
+  .fr3 .sfx { position: absolute; bottom: 10px; font-family: 'Rubik Mono One'; font-size: 24px; color: var(--r); -webkit-text-stroke: 1px #111; transform: rotate(-8deg); }
+  .fr3.wait { opacity: .2; }
+  .rk { padding: 14px; overflow: auto; } .rk .r { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 3px solid #111; margin-bottom: 6px; background: #fff; box-shadow: 3px 3px 0 #111; }
+  .rk .r.me { background: var(--pk); color: #fff; } .rk .r .n { flex: 1; } .rk .r .pos { font-family: 'Rubik Mono One'; width: 34px; }
+  /* defuse */
+  .dz { position: absolute; inset: 0; z-index: 70; display: none; place-items: center; background: #0008; }
+  .dz.on { display: grid; }
+  .dpanel { width: 620px; border: 5px solid #111; background: #fff; box-shadow: 8px 8px 0 #111; }
+  .dpanel .zh { background: var(--r); color: #fff; }
+  .wires { display: flex; justify-content: space-around; padding: 24px 20px 10px; }
+  .wire { width: 40px; height: 180px; border-radius: 20px; border: 4px solid #111; background: var(--c); cursor: pointer; position: relative; transition: transform .15s; }
+  .wire:hover { transform: scaleX(1.2); } .wire.cut { clip-path: polygon(0 0, 100% 0, 100% 45%, 0 52%, 0 58%, 100% 51%, 100% 100%, 0 100%); }
+  .clue { padding: 0 20px 20px; text-align: center; }
+  @container stage (max-height: 450px) { .caps, .narr, .side, .pve, .strip, .open, .wire-hint { zoom: .62; } .page, .dz { zoom: .62; width: 161.3%; height: 161.3%; inset: auto; left: 0; top: 0; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a caps" id="caps"></div>
+  <div class="a cap narr">ТЕМ ВРЕМЕНЕМ… сундуки всплывут через <b id="tT"></b>, а зомби нагрянут через <b id="tR"></b>!</div>
+  <div class="a side">
+    <div class="bub" data-z="shop"><span class="e">🛒</span>ЛАВКА!</div>
+    <div class="bub" data-z="pets"><span class="e">🥚</span>ПЕТЫ!</div>
+    <div class="bub" data-z="donate" style="background:var(--b);color:#fff"><span class="e">💎</span>R$!</div>
+  </div>
+  <div class="a bub wire-hint" id="wireHint">💣 Мина! Какой провод резать?! (E)</div>
+  <div class="a cap pve" id="pve"></div>
+  <div class="a open" data-page>📖 ОТКРЫТЬ ВЫПУСК (TAB)</div>
+  <div class="a strip" id="strip"></div>
+
+  <div class="page ht" id="page"><div class="grid" id="grid"></div></div>
+  <div class="zoom" id="zoom"></div>
+  <div class="dz" id="dz"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS, QUESTS } = BL;
+const $ = (s) => document.querySelector(s);
+let z = null, cat = 'tools', sel = null, egg = 'egg1', rstat = 'coins', slot = 0, lastPet = null;
+
+function fx(text, color = 'var(--r)') {
+  const f = document.createElement('div'); f.className = 'fx'; f.textContent = text; f.style.background = color;
+  f.style.left = 300 + Math.random() * 300 + 'px'; f.style.top = 160 + Math.random() * 160 + 'px'; $('#stage').append(f); setTimeout(() => f.remove(), 900);
+}
+function hud() {
+  $('#caps').innerHTML = `<div class="cap lead">ГЛАВА 3: ЖЁЛТАЯ ЗОНА</div>` + ['coins', 'gems', 'crypto'].map((k) => `<div class="cap">${CUR[k].icon} ${CUR[k].name}: <b>${BL.fmt(S[k])}</b></div>`).join('');
+  $('#pve').className = 'a cap pve' + (S.pve ? '' : ' off'); $('#pve').innerHTML = `<b>${S.pve ? '🛡️ МИР!' : '⚔️ ВОЙНА!'}</b>${S.pve ? 'Никто не нападёт' : 'Соседи могут напасть'}`;
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#strip').innerHTML = ids.map((id, i) => `<div class="p ${i === slot ? 'on' : ''}" data-slot="${i}"><i>${i + 1}</i>${id === 'hammer' ? '🔨' : BL.item(id).icon}</div>`).join('');
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+const PANELS = [
+  { k: 'shop', t: 'Лавка Зины', e: '👵🛒', c: '#ffe7a1', say: 'Кусачки сами себя не купят!', big: true },
+  { k: 'pets', t: 'Яйца и петы', e: '🥚', c: '#d5f5ff', say: 'Оно шевелится!' },
+  { k: 'donate', t: 'Сундук R$', e: '💰', c: '#c9ffd9', say: 'Звенит!' },
+  { k: 'rank', t: 'Топ героев', e: '🏆', c: '#ffd6ec', say: 'Я — седьмой?!' },
+  { k: 'quests', t: 'Задания', e: '📜', c: '#e8ddff', say: 'Ещё 3 мины…' },
+];
+function openPage() {
+  $('#grid').innerHTML = PANELS.map((p) => `<div class="pn ht ${p.big ? 'big' : ''}" style="--c:${p.c}" data-z="${p.k}"><div class="ttl">${p.t}</div><div class="art">${p.e}</div><div class="bub say">${p.say}</div></div>`).join('');
+  $('#page').classList.add('on');
+}
+function closeAll() { z = null; $('#zoom').classList.remove('on'); $('#page').classList.remove('on'); }
+
+function zinaSay(it) {
+  if (!it) return 'Выбери что-нибудь, а я расскажу! 👵';
+  const own = S.owned.has(it.id);
+  return `<b>${it.name}</b> — ${it.desc} ${own ? 'Оно уже твоё, внучок!' : BL.canAfford(it) ? 'Тебе как раз хватает!' : 'Маловато денег… иди мины поснимай!'}`;
+}
+const Z = {
+  shop: ['Лавка Зины', '#ffe7a1', () => { const it = sel && BL.item(sel);
+    return `<div class="zb"><div><div style="display:flex;gap:8px;padding:12px 14px 0">${Object.keys(CATS).map((k) => `<span class="cb ${k === cat ? 'on' : ''}" data-cat="${k}">${CATS[k].name}</span>`).join('')}</div>
+      <div class="cells">${BL.byCat(cat).map((x) => `<div class="cell ${x.id === sel ? 'sel' : ''} ${S.owned.has(x.id) ? 'own' : ''}" data-sel="${x.id}"><div class="e">${x.icon}</div><b>${x.name}</b><small>${BL.price(x)}</small></div>`).join('')}</div></div>
+      <div class="talk"><div class="zina">👵</div><div class="bub up">${zinaSay(it)}</div>${it ? `<span class="cb ${S.equipped[it.cat] === it.id ? 'no' : S.owned.has(it.id) ? 'on' : it.cur === 'robux' ? 'rbx' : BL.canAfford(it) ? 'go' : 'no'}" data-buy="${it.id}" style="text-align:center;font-size:15px">${S.equipped[it.cat] === it.id ? 'УЖЕ В РУКАХ' : S.owned.has(it.id) ? (it.cat === 'build' ? 'ПОСТРОЕНО' : 'ВЗЯТЬ В РУКИ') : 'КУПИТЬ · ' + BL.price(it)}</span>` : ''}</div></div>`; }],
+  pets: ['Яйца и петы', '#d5f5ff', () => { const e = EGGS.find((x) => x.id === egg);
+    return `<div style="display:flex;gap:8px;padding:12px 14px 0;align-items:center">${EGGS.map((x) => `<span class="cb ${x.id === egg ? 'on' : ''}" data-egg="${x.id}">${x.icon} ${x.name}</span>`).join('')}<span class="sp" style="flex:1"></span><span class="cb go" data-hatch>ВЫСИДЕТЬ · ${BL.price(e)}</span></div>
+      <div class="seq" id="seq"><div class="fr3"><span class="cp">КАДР 1</span>${e.icon}<span class="sfx">ТУК-ТУК</span></div><div class="fr3 wait"><span class="cp">КАДР 2</span>💥<span class="sfx">ТРЕСК!</span></div><div class="fr3 wait"><span class="cp">КАДР 3</span>❓</div></div>
+      <div style="padding:0 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">Мои петы (${S.pets.filter((p) => p.eq).length}/${S.petSlots}, x${BL.petMult().toFixed(2)}): ${S.pets.map((p) => `<span class="cb ${p.eq ? 'on' : ''}" data-pet="${p.uid}" style="font-size:20px;padding:4px 8px">${PETS[p.key].icon}</span>`).join('')}</div>`; }],
+  donate: ['Сундук R$', '#c9ffd9', () => `<div class="cells" style="grid-template-columns:repeat(5,1fr)">${DONATE.map((d) => `<div class="cell ${S.passes.has(d.id) ? 'own' : ''}" data-don="${d.id}"><div class="e">${d.icon}</div><b>${d.name}</b><div style="font-size:13px;min-height:36px">${d.give ? Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ') : d.desc}</div><span class="cb rbx">R$ ${d.price}</span></div>`).join('')}</div><div style="padding:0 14px">Демо-баланс: R$ ${S.robux}. Ничего настоящего не списывается.</div>`],
+  rank: ['Топ героев', '#ffd6ec', () => `<div style="display:flex;gap:8px;padding:12px 14px 0">${STATS.map((s) => `<span class="cb ${s.id === rstat ? 'on' : ''}" data-rstat="${s.id}">${s.name}</span>`).join('')}</div>
+      <div class="rk">${RANKS[rstat].slice(0, 10).map((r, i) => `<div class="r ${r.me ? 'me' : ''}"><span class="pos">#${i + 1}</span><span class="n">${r.name}${i === 0 ? ' 👑' : ''}</span><b class="M" style="font-size:14px">${BL.fmt(r.value)}</b></div>`).join('')}</div>`],
+  quests: ['Задания', '#e8ddff', () => `<div class="rk">${QUESTS.map((q) => `<div class="r"><span class="pos">${q.done >= q.need ? '✅' : '⏳'}</span><span class="n">${q.text} — ${q.done}/${q.need}</span><span class="cb ${q.done >= q.need ? 'go' : 'no'}" data-claim="${q.id}">${q.reward}</span></div>`).join('')}</div>`],
+};
+function openZ(k) {
+  z = k; const [t, c, f] = Z[k]; const zz = $('#zoom'); zz.style.setProperty('--c', c);
+  zz.innerHTML = `<div class="zh ht"><h2>${t}</h2><span class="sp"></span><span class="cb" data-back>◀ К ВЫПУСКУ</span><span class="cb" data-x>✕</span></div>${f()}`; zz.classList.add('on');
+}
+function hatch() {
+  const r = BL.hatch(egg); if (!r.ok) { fx('НЕТ ДЕНЕГ!', '#999'); return; } const p = r.pets[0]; lastPet = p;
+  const fr = document.querySelectorAll('#seq .fr3');
+  setTimeout(() => fr[1].classList.remove('wait'), 500);
+  setTimeout(() => { fr[2].classList.remove('wait'); fr[2].innerHTML = `<span class="cp">КАДР 3</span>${p.icon}<span class="sfx" style="color:${RARITY[p.rarity].color}">${RARITY[p.rarity].name.toUpperCase()}!</span>`; fx(p.name.toUpperCase().split(' ')[0] + '!', RARITY[p.rarity].color); }, 1100);
+  setTimeout(() => { if (z === 'pets') { const keep = $('#seq').outerHTML; openZ('pets'); $('#seq').outerHTML = keep; } }, 1300);
+}
+function defuse() {
+  const colors = [['КРАСНЫЙ', '#ff2e3b'], ['СИНИЙ', '#1fa3ff'], ['ЗЕЛЁНЫЙ', '#29d16b']]; const good = Math.floor(Math.random() * 3);
+  const clue = ['Бабушка шепчет: «Только не синий и не зелёный…»', 'Бабушка шепчет: «Красный — ловушка, зелёный тоже!»', 'Бабушка шепчет: «Цвет травы, внучок, цвет травы…»'][good];
+  $('#dz').innerHTML = `<div class="dpanel" id="dp"><div class="zh ht"><h2>РЕЖЬ ПРОВОД!</h2><span class="sp"></span><span class="cb" data-dzx>✕</span></div><div class="wires">${colors.map((c, i) => `<div class="wire" style="--c:${c[1]}" data-wire="${i}" data-good="${good}" title="${c[0]}"></div>`).join('')}</div><div class="clue bub" style="margin:0 20px 20px;cursor:default">${clue}</div></div>`;
+  $('#dz').classList.add('on');
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-z],[data-page],[data-back],[data-x],[data-cat],[data-sel],[data-buy],[data-egg],[data-hatch],[data-pet],[data-don],[data-rstat],[data-claim],[data-slot],[data-wire],[data-dzx],#pve,#wireHint');
+  if (!t) return; const d = t.dataset;
+  if (d.z) { if (!$('#page').classList.contains('on')) openPage(); openZ(d.z); }
+  else if ('page' in d) openPage();
+  else if ('back' in d) { z = null; $('#zoom').classList.remove('on'); }
+  else if ('x' in d) closeAll();
+  else if (d.cat) { cat = d.cat; sel = null; openZ('shop'); }
+  else if (d.sel) { sel = d.sel; openZ('shop'); }
+  else if (d.buy) { const r = BL.buy(d.buy); fx(r.ok ? (r.equipped ? 'ХВАТЬ!' : 'БУМ! КУПЛЕНО!') : 'УВЫ!', r.ok ? 'var(--r)' : '#999'); }
+  else if (d.egg) { egg = d.egg; openZ('pets'); }
+  else if ('hatch' in d) hatch();
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) fx('МЕСТ НЕТ!', '#999'); }
+  else if (d.don) { const r = BL.donate(d.don); fx(r.ok ? 'ДЗЫНЬ!' : 'УВЫ!', r.ok ? 'var(--g)' : '#999'); }
+  else if (d.rstat) { rstat = d.rstat; openZ('rank'); }
+  else if (d.claim) { const q = QUESTS.find((x) => x.id === d.claim); if (q.done >= q.need) { q.done = 0; fx('НАГРАДА!', 'var(--g)'); openZ('quests'); } }
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if (d.wire) {
+    t.classList.add('cut');
+    if (+d.wire === +d.good) { BL.earn(BL.ZONES[1].reward); fx('ЩЁЛК! +' + BL.ZONES[1].reward, 'var(--g)'); setTimeout(() => $('#dz').classList.remove('on'), 700); }
+    else { fx('БАБАХ!!!'); $('#stage').classList.add('shake'); setTimeout(() => { $('#stage').classList.remove('shake'); $('#dz').classList.remove('on'); }, 500); }
+  }
+  else if ('dzx' in d) $('#dz').classList.remove('on');
+  else if (t.id === 'pve') fx(BL.togglePvE() ? 'МИР!' : 'В БОЙ!', S.pve ? 'var(--g)' : 'var(--r)');
+  else if (t.id === 'wireHint') defuse();
+});
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'tab') { e.preventDefault(); $('#page').classList.contains('on') ? closeAll() : openPage(); }
+  else if (k === 'escape') { if ($('#dz').classList.contains('on')) $('#dz').classList.remove('on'); else if (z) { z = null; $('#zoom').classList.remove('on'); } else closeAll(); }
+  else if (k === 'e' || k === 'у') defuse();
+  else if (k >= '1' && k <= '5') { slot = +k - 1; hud(); }
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (z && w !== 'hatch' && w !== 'earn') openZ(z); });
+hud(); tick();
+</script>
+</body>
+</html>

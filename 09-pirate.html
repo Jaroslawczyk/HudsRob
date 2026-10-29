@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пиратская таверна</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Lora:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Lora', Georgia, serif; color: #3a2412; --wood: #7a4a24; --wood2: #5b3416; --gold: #f2c14e; --parch: #f1e0b8; --ink: #3a2412; --sea: #2a6f8f; }
+  .Y { font-family: 'Yeseva One', serif; }
+  .wood { background: repeating-linear-gradient(0deg, #00000014 0 2px, transparent 2px 18px), linear-gradient(90deg, #8a5630, #6e4020 50%, #84502b);
+    border: 3px solid #3a200c; box-shadow: inset 0 0 0 2px #a8703f55, 0 4px 10px #0007; color: #fbe9c6; }
+  .parch { background: radial-gradient(ellipse at center, #f7ead0 40%, #e3c78f 100%); box-shadow: inset 0 0 40px #a87b3a99, 0 6px 16px #0007; }
+  .a { position: absolute; z-index: 5; }
+  .rope::before, .rope::after { content: ''; position: absolute; top: -14px; width: 3px; height: 16px; background: repeating-linear-gradient(#c9a26b 0 3px, #8a6a3a 3px 6px); }
+  .rope::before { left: 30px; } .rope::after { right: 30px; }
+  .sign { left: 16px; top: 18px; padding: 10px 16px; border-radius: 6px; min-width: 220px; }
+  .sign .r { display: flex; justify-content: space-between; gap: 18px; font-size: 18px; } .sign .r b { font-family: 'Yeseva One'; color: var(--gold); text-shadow: 0 2px 0 #0008; }
+  .compass { right: 16px; top: 14px; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+  .compass .rose { position: absolute; inset: 14px; border-radius: 50%; border: 2px solid #8a6a3a;
+    background: conic-gradient(from -22.5deg, #3a241222 0 45deg, transparent 45deg 90deg, #3a241222 90deg 135deg, transparent 135deg 180deg, #3a241222 180deg 225deg, transparent 225deg 270deg, #3a241222 270deg 315deg, transparent 315deg); }
+  .compass .needle { position: absolute; width: 8px; height: 110px; background: linear-gradient(#c0392b 50%, #3a2412 50%); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); animation: needle 4s ease-in-out infinite alternate; }
+  @keyframes needle { from { transform: rotate(-20deg); } to { transform: rotate(25deg); } }
+  .compass .t { position: relative; background: #f7ead0ee; padding: 2px 6px; border-radius: 6px; font-size: 11px; } .compass .t b { display: block; font-size: 18px; font-family: 'Yeseva One'; }
+  .flag { left: 16px; bottom: 16px; cursor: pointer; display: flex; align-items: flex-end; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 8px; }
+  .flag .pole { width: 4px; height: 64px; background: #3a200c; position: relative; }
+  .flag .cloth { position: absolute; left: 4px; top: 0; width: 50px; height: 34px; display: grid; place-items: center; font-size: 20px; animation: wave 1.2s ease-in-out infinite alternate; transform-origin: left; }
+  @keyframes wave { to { transform: skewY(6deg) scaleX(.94); } }
+  .flag b { display: block; font-size: 16px; } .flag small { font-size: 11px; opacity: .85; }
+  .crates { left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; }
+  .crate { width: 64px; height: 64px; display: grid; place-items: center; font-size: 28px; cursor: pointer; position: relative; border-radius: 4px; }
+  .crate::after { content: ''; position: absolute; inset: 6px; border: 2px solid #3a200c88; background: linear-gradient(45deg, transparent 47%, #3a200c66 47% 53%, transparent 53%); pointer-events: none; }
+  .crate.on { outline: 3px solid var(--gold); transform: translateY(-6px); }
+  .crate i { position: absolute; top: 1px; left: 4px; font-size: 12px; font-style: normal; z-index: 1; color: var(--gold); }
+  .mapBtn { right: 16px; bottom: 16px; padding: 12px 20px; border-radius: 10px; font-size: 20px; cursor: pointer; transform: rotate(-2deg); }
+  .mapBtn:hover { transform: rotate(2deg) scale(1.05); }
+  .bubble { left: 54%; top: 47%; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; border: 2px solid var(--ink); }
+  .bubble::after { content: ''; position: absolute; left: 20px; top: 100%; border: 10px solid transparent; border-top-color: var(--ink); }
+  /* map */
+  .ov { position: absolute; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: #1a0f06aa; }
+  .ov.on { display: flex; }
+  .map { position: relative; width: 980px; height: 620px; border-radius: 6px; clip-path: polygon(1% 2%, 20% 0, 50% 1.5%, 80% 0, 99% 2%, 100% 50%, 98.5% 98%, 70% 100%, 40% 98.5%, 2% 100%, 0 60%); animation: unroll .45s ease-out; }
+  @keyframes unroll { from { transform: scaleX(.05); } }
+  .map h2 { position: absolute; left: 30px; top: 18px; margin: 0; font-size: 34px; }
+  .map .sub { position: absolute; left: 32px; top: 62px; font-style: italic; }
+  .map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .loc { position: absolute; transform: translate(-50%, -50%); text-align: center; cursor: pointer; transition: transform .15s; }
+  .loc:hover { transform: translate(-50%, -50%) scale(1.12); }
+  .loc .e { font-size: 40px; filter: drop-shadow(0 3px 0 #0004); } .loc .n { font-family: 'Yeseva One'; font-size: 15px; background: #f7ead0; border: 1.5px solid var(--ink); padding: 1px 8px; border-radius: 4px; white-space: nowrap; }
+  .loc.lock { opacity: .55; } .loc.lock .n::after { content: ' 🔒'; }
+  .ship { position: absolute; font-size: 34px; transform: translate(-50%, -60%); transition: left 1s ease-in-out, top 1s ease-in-out; pointer-events: none; z-index: 2; }
+  .x { position: absolute; right: 18px; top: 14px; width: 46px; height: 46px; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 3; }
+  /* location */
+  .place { position: relative; width: 980px; height: 620px; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; animation: unroll .3s ease-out; }
+  .ph { display: flex; align-items: center; gap: 12px; padding: 12px 18px; }
+  .ph h2 { margin: 0; font-size: 30px; color: var(--gold); text-shadow: 0 2px 0 #000; } .ph .sp { flex: 1; }
+  .btnw { padding: 8px 14px; border-radius: 8px; cursor: pointer; font: 700 15px 'Lora'; }
+  .pb { flex: 1; min-height: 0; overflow: auto; padding: 0 18px 18px; position: relative; }
+  .tabs2 { display: flex; gap: 8px; margin-bottom: 10px; }
+  .tabs2 span { padding: 4px 12px; border-radius: 6px 6px 0 0; cursor: pointer; background: #f1e0b8aa; font-weight: 700; border: 2px solid var(--ink); border-bottom: 0; }
+  .tabs2 span.on { background: var(--parch); transform: translateY(-3px); }
+  .shelf { position: relative; display: flex; justify-content: space-around; align-items: flex-end; height: 140px; margin-bottom: 18px; padding: 0 20px; }
+  .shelf::after { content: ''; position: absolute; left: 0; right: 0; bottom: -14px; height: 16px; border-radius: 3px;
+    background: linear-gradient(#8a5630, #5b3416); box-shadow: 0 6px 8px #0006; }
+  .good { text-align: center; cursor: pointer; position: relative; transition: transform .15s; }
+  .good:hover { transform: translateY(-6px); }
+  .good .e { font-size: 58px; filter: drop-shadow(0 4px 2px #0005); }
+  .tag { position: absolute; top: -6px; right: -36px; background: var(--parch); border: 1.5px solid var(--ink); padding: 2px 6px 2px 10px; font-size: 12px; font-weight: 700; transform: rotate(12deg); white-space: nowrap;
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%); }
+  .tag.sold { background: #9bd29b; }
+  .deal { position: absolute; right: 18px; top: 10px; width: 300px; padding: 16px; border-radius: 4px; z-index: 4; transform: rotate(1deg); }
+  .deal h3 { margin: 0 0 4px; font-size: 22px; } .deal .e { font-size: 60px; text-align: center; }
+  .deal .log { font-style: italic; font-size: 14px; margin: 6px 0; } .deal .st { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--ink); font-size: 14px; }
+  .gold-btn { display: block; width: 100%; margin-top: 12px; padding: 10px; border: 2px solid #6b4a10; border-radius: 8px; cursor: pointer; font: 700 16px 'Yeseva One';
+    background: linear-gradient(#ffe08a, #e0a832); color: #3a2412; box-shadow: 0 3px 0 #6b4a10; }
+  .gold-btn.no { filter: grayscale(.8); opacity: .7; }
+  .nest { display: flex; justify-content: center; gap: 40px; padding-top: 20px; }
+  .eggc { text-align: center; cursor: pointer; } .eggc .e { font-size: 80px; display: block; transition: transform .2s; } .eggc:hover .e { transform: rotate(-8deg); }
+  .eggc .bowl { width: 140px; height: 40px; margin: -20px auto 6px; border-radius: 0 0 70px 70px; background: repeating-linear-gradient(-30deg, #a8703f 0 4px, #6e4020 4px 8px); }
+  .eggc.shake .e { animation: sh .2s 8; } @keyframes sh { 50% { transform: rotate(12deg); } }
+  .crew { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; justify-content: center; }
+  .mate { width: 74px; padding: 6px; text-align: center; border: 2px solid var(--ink); border-radius: 6px; background: #f7ead0; cursor: pointer; font-size: 28px; }
+  .mate small { display: block; font-size: 11px; } .mate.eq { background: #ffe08a; box-shadow: 0 0 0 3px var(--gold); }
+  .wanted { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .poster { padding: 10px; text-align: center; transform: rotate(var(--t)); position: relative; }
+  .poster::before { content: ''; position: absolute; top: 4px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #555; }
+  .poster .w { font-family: 'Yeseva One'; font-size: 20px; letter-spacing: 2px; } .poster .face { font-size: 40px; margin: 4px 0; border: 2px solid var(--ink); background: #e8d3a3; }
+  .poster b { display: block; font-size: 13px; } .poster .bounty { font-family: 'Yeseva One'; color: #8a1f12; font-size: 16px; }
+  .poster.me { box-shadow: 0 0 0 4px var(--gold), 0 6px 16px #0007; }
+  .chests { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .chest { text-align: center; cursor: pointer; padding: 8px; border-radius: 8px; }
+  .chest .e { font-size: 54px; display: block; transition: transform .3s; } .chest:hover .e { transform: scale(1.1) rotate(-5deg); }
+  .chest b { display: block; font-size: 14px; } .chest small { display: block; font-size: 12px; min-height: 30px; }
+  .coinrain { position: absolute; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+  .coinrain i { position: absolute; top: -40px; font-size: 28px; font-style: normal; animation: fall 1.4s ease-in forwards; }
+  @keyframes fall { to { transform: translateY(700px) rotate(540deg); } }
+  .toast { position: absolute; left: 50%; top: 18px; transform: translateX(-50%) translateY(-120px); z-index: 90; padding: 10px 22px; border-radius: 6px; font: 18px 'Yeseva One'; transition: transform .3s; white-space: nowrap; }
+  .toast.on { transform: translateX(-50%); }
+  @container stage (max-height: 450px) { .sign, .compass, .flag, .crates, .mapBtn, .bubble { zoom: .62; } .map, .place { zoom: .6; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a sign wood rope" id="sign"></div>
+  <div class="a compass parch"><div class="rose"></div><div class="needle"></div><div class="t">Остров сокровищ<b id="tT"></b>рейд <span id="tR"></span></div></div>
+  <div class="a flag wood" id="flag"></div>
+  <div class="a crates" id="crates"></div>
+  <div class="a mapBtn wood Y" data-map>🗺️ Карта [M]</div>
+  <div class="a bubble parch" id="bubble">⚓ Мина у берега! Тык или [E] — +120 🪙</div>
+
+  <div class="ov" id="ov"></div>
+  <div class="coinrain" id="rain"></div>
+  <div class="toast wood" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS } = BL;
+const $ = (s) => document.querySelector(s);
+const LOCS = [
+  { k: 'shop', e: '🏚️', n: 'Лавка Бабушки Зины', x: 300, y: 330 },
+  { k: 'dock', e: '⚓', n: 'Верфь', x: 220, y: 470 },
+  { k: 'nest', e: '🪺', n: 'Инкубатор (за мостом)', x: 150, y: 250, need: 'bridge' },
+  { k: 'board', e: '📜', n: 'Доска розыска', x: 410, y: 230 },
+  { k: 'tavern', e: '🍺', n: 'Таверна «Сундук»', x: 420, y: 430 },
+  { k: 'treasure', e: '❌', n: 'Остров сокровищ', x: 700, y: 330 },
+];
+let shipAt = { x: 330, y: 400 }, place = null, sel = null, shelfCat = 'tools', rstat = 'coins', slot = 0;
+
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
+function rain(icon = '🪙') { $('#rain').innerHTML = Array.from({ length: 26 }, (_, i) => `<i style="left:${Math.random() * 100}%;animation-delay:${Math.random() * .5}s">${icon}</i>`).join(''); setTimeout(() => ($('#rain').innerHTML = ''), 2000); }
+function hud() {
+  $('#sign').innerHTML = `<div class="Y" style="text-align:center;font-size:15px;margin-bottom:4px;opacity:.8">~ Казна ~</div>` + ['coins', 'gems', 'crypto', 'minerals'].map((k) => `<div class="r"><span>${CUR[k].icon} ${CUR[k].name}</span><b>${BL.fmt(S[k])}</b></div>`).join('');
+  $('#flag').innerHTML = `<div class="pole"><div class="cloth" style="background:${S.pve ? '#fff' : '#111'};color:${S.pve ? '#3a2412' : '#fff'}">${S.pve ? '🕊️' : '☠️'}</div></div><div><b class="Y">${S.pve ? 'Белый флаг' : 'Весёлый Роджер'}</b><small>${S.pve ? 'мир: вас не грабят' : 'PvP: абордаж разрешён'}</small></div>`;
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#crates').innerHTML = ids.map((id, i) => `<div class="crate wood ${i === slot ? 'on' : ''}" data-slot="${i}"><i>${i + 1}</i>${id === 'hammer' ? '🔨' : BL.item(id).icon}</div>`).join('');
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+function openMap() {
+  place = null;
+  $('#ov').innerHTML = `<div class="map parch"><h2 class="Y">Архипелаг Бумленд</h2><div class="sub">Нажми на место — корабль доплывёт сам</div><button class="x wood" data-close>✕</button>
+    <svg viewBox="0 0 980 620"><defs><pattern id="wv" width="40" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 q10 -8 20 0 t20 0" fill="none" stroke="#2a6f8f44" stroke-width="2"/></pattern></defs>
+      <rect width="980" height="620" fill="url(#wv)"/>
+      <path d="M90 300 C 80 180, 260 150, 380 180 C 500 200, 520 330, 480 440 C 440 540, 250 560, 160 500 C 90 450, 100 380, 90 300 Z" fill="#e8cf95" stroke="#3a2412" stroke-width="3"/>
+      <path d="M200 230 C 205 300, 195 330, 210 380" stroke="#2a6f8f" stroke-width="10" fill="none"/>
+      <path d="M640 330 C 640 280, 760 270, 770 330 C 780 390, 650 400, 640 330 Z" fill="#e8cf95" stroke="#3a2412" stroke-width="3"/>
+      <circle cx="860" cy="130" r="50" fill="#e8cf95" stroke="#3a2412" stroke-width="3"/><circle cx="860" cy="520" r="44" fill="#e8cf95" stroke="#3a2412" stroke-width="3"/><circle cx="590" cy="110" r="36" fill="#e8cf95" stroke="#3a2412" stroke-width="3"/>
+      <text x="860" y="135" text-anchor="middle" font-family="Yeseva One" font-size="14">KrabikRU</text><text x="860" y="525" text-anchor="middle" font-family="Yeseva One" font-size="14">MineLord_X</text><text x="590" y="115" text-anchor="middle" font-family="Yeseva One" font-size="12">TNT_Masha</text>
+      <path id="route" d="" fill="none" stroke="#8a1f12" stroke-width="3" stroke-dasharray="10 8"/>
+    </svg>
+    ${LOCS.map((l) => `<div class="loc ${l.need && !S.owned.has(l.need) ? 'lock' : ''}" style="left:${l.x}px;top:${l.y}px" data-loc="${l.k}"><div class="e">${l.e}</div><div class="n">${l.n}</div></div>`).join('')}
+    <div class="ship" id="ship" style="left:${shipAt.x}px;top:${shipAt.y}px">⛵</div></div>`;
+  $('#ov').classList.add('on');
+}
+function sail(k) {
+  const l = LOCS.find((x) => x.k === k);
+  if (l.need && !S.owned.has(l.need)) { toast('Сначала почини мост (Лавка Зины, 1 000 🪙)'); return; }
+  if (k === 'treasure' && !S.owned.has('motor') && !S.owned.has('jet') && !S.owned.has('shark')) { toast('На надувной лодке не доплыть — нужен катер!'); return; }
+  $('#route').setAttribute('d', `M${shipAt.x} ${shipAt.y} Q ${(shipAt.x + l.x) / 2} ${Math.min(shipAt.y, l.y) - 80} ${l.x} ${l.y}`);
+  shipAt = { x: l.x, y: l.y }; $('#ship').style.left = l.x + 'px'; $('#ship').style.top = l.y + 'px';
+  setTimeout(() => openPlace(k), 1050);
+}
+const PL = {
+  shop: ['Лавка Бабушки Зины', () => {
+    const items = BL.byCat(shelfCat); const rows = [items.slice(0, 3), items.slice(3)];
+    const it = sel && BL.item(sel);
+    return `<div class="tabs2">${['tools', 'weapons', 'build'].map((c) => `<span class="${c === shelfCat ? 'on' : ''}" data-shelf="${c}">${CATS[c].name}</span>`).join('')}</div>
+      <div style="width:${it ? 600 : 940}px">${rows.filter((r) => r.length).map((r) => `<div class="shelf">${r.map((x) => `<div class="good" data-sel="${x.id}"><div class="e">${x.icon}</div><span class="tag ${S.owned.has(x.id) ? 'sold' : ''}">${S.owned.has(x.id) ? 'ваше' : BL.price(x)}</span></div>`).join('')}</div>`).join('')}</div>
+      ${it ? deal(it) : '<p style="font-style:italic">«Бери, внучок, что глянется. Нажми на товар.» — Бабушка Зина</p>'}`;
+  }],
+  dock: ['Верфь', () => { const it = sel && BL.item(sel) && BL.item(sel).cat === 'boats' ? BL.item(sel) : null;
+    return `<div style="width:${it ? 600 : 940}px"><div class="shelf" style="height:170px;background:linear-gradient(transparent 60%, #2a6f8f 60%);border-radius:8px">${BL.byCat('boats').map((x) => `<div class="good" data-sel="${x.id}"><div class="e" style="font-size:70px">${x.icon}</div><span class="tag ${S.owned.has(x.id) ? 'sold' : ''}">${S.owned.has(x.id) ? 'ваша' : BL.price(x)}</span></div>`).join('')}</div></div>
+      ${it ? deal(it) : '<p style="font-style:italic">Выбери посудину. «Акула» — за Robux.</p>'}`; }],
+  nest: ['Инкубатор', () => `<div class="nest">${EGGS.map((e) => `<div class="eggc" data-egg="${e.id}"><span class="e">${e.icon}</span><div class="bowl"></div><b class="Y">${e.name}</b><br><small>${Object.keys(e.pool).map((k) => PETS[k].icon).join(' ')}</small><br><span class="tag" style="position:static;display:inline-block;transform:rotate(-3deg)">${BL.price(e)}</span></div>`).join('')}</div>
+      <p style="text-align:center;margin-top:20px" class="Y">Команда корабля: ${S.pets.filter((p) => p.eq).length}/${S.petSlots} · бонус x${BL.petMult().toFixed(2)}</p>
+      <div class="crew">${S.pets.map((p) => `<div class="mate ${p.eq ? 'eq' : ''}" data-pet="${p.uid}">${PETS[p.key].icon}<small>${PETS[p.key].name}</small></div>`).join('')}</div>`],
+  board: ['Доска розыска', () => `<div class="tabs2">${STATS.map((s) => `<span class="${s.id === rstat ? 'on' : ''}" data-rstat="${s.id}">${s.name}</span>`).join('')}</div>
+      <div class="wanted">${RANKS[rstat].slice(0, 10).map((r, i) => `<div class="poster parch ${r.me ? 'me' : ''}" style="--t:${(i % 3 - 1) * 2.5}deg"><div class="w">РОЗЫСК</div><div class="face">${['🏴‍☠️', '🦜', '🧔', '👒', '🦑', '🐙', '😎', '🧕', '👑', '🧟'][i]}</div><b>#${i + 1} ${r.name}</b><div class="bounty">${BL.fmt(r.value)}</div></div>`).join('')}</div>`],
+  tavern: ['Таверна «Золотой сундук»', () => `<p style="margin-top:0">Демо-кошель: <b>R$ ${S.robux}</b> · Ром не наливаем, только Robux.</p>
+      <div class="chests">${DONATE.map((d) => `<div class="chest parch" data-don="${d.id}"><span class="e">${S.passes.has(d.id) ? '✅' : d.kind === 'pack' ? '🧰' : d.icon}</span><b class="Y">${d.name}</b><small>${d.give ? Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ') : d.desc}</small><span class="tag" style="position:static;display:inline-block">R$ ${d.price}</span></div>`).join('')}</div>`],
+  treasure: ['Остров сокровищ', () => `<div style="text-align:center;padding-top:40px"><div style="font-size:110px">🏝️</div><h2 class="Y" style="font-size:34px">Сундуки всплывут через ${BL.mmss(S.treasureAt - Date.now())}</h2><p>Соседи тоже плывут сюда. ${S.pve ? 'С белым флагом вас не потопят, но и вы не сможете абордировать.' : 'Под Весёлым Роджером — бой до последнего ядра!'}</p></div>`],
+};
+function deal(it) {
+  const own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id;
+  return `<div class="deal parch"><div class="e">${it.icon}</div><h3 class="Y">${it.name}</h3><div style="color:${RARITY[it.rarity].color};font-weight:700">${RARITY[it.rarity].name}</div><div class="log">«${it.desc}»</div>
+    ${it.cat === 'build' ? `<div class="st"><span>Доход</span><b>${it.stats.power}</b></div>` : `<div class="st"><span>Скорость</span><b>${it.stats.speed}</b></div><div class="st"><span>Мощь</span><b>${it.stats.power}</b></div><div class="st"><span>Дальность</span><b>${it.stats.range}</b></div>`}
+    <button class="gold-btn ${!own && !BL.canAfford(it) ? 'no' : ''}" data-buy="${it.id}">${eq ? 'Уже при вас' : own ? (it.cat === 'build' ? 'Построено' : 'Взять с собой') : 'По рукам! ' + BL.price(it)}</button></div>`;
+}
+function openPlace(k) {
+  place = k; const [t, f] = PL[k]; const st = $('#ov .pb')?.scrollTop;
+  $('#ov').innerHTML = `<div class="place wood"><div class="ph"><h2 class="Y">${LOCS.find((l) => l.k === k).e} ${t}</h2><span class="sp"></span><span class="btnw parch" data-map>🗺️ На карту</span><span class="btnw parch" data-close>✕</span></div><div class="pb parch" style="margin:0 12px 12px;border-radius:4px;padding-top:12px">${f()}</div></div>`;
+  $('#ov').classList.add('on'); if (st) $('#ov .pb').scrollTop = st;
+}
+function closeOv() { place = null; sel = null; $('#ov').classList.remove('on'); }
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-map],[data-close],[data-loc],[data-shelf],[data-sel],[data-buy],[data-egg],[data-pet],[data-rstat],[data-don],[data-slot],#flag,#bubble');
+  if (!t) return; const d = t.dataset;
+  if ('map' in d) openMap();
+  else if ('close' in d) closeOv();
+  else if (d.loc) sail(d.loc);
+  else if (d.shelf) { shelfCat = d.shelf; sel = null; openPlace('shop'); }
+  else if (d.sel) { sel = d.sel; openPlace(place); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg); if (r.ok && !r.equipped) rain(BL.item(d.buy).icon); }
+  else if (d.egg) {
+    const r = BL.hatch(d.egg); if (!r.ok) return toast(r.msg); t.classList.add('shake');
+    setTimeout(() => { const p = r.pets[0]; t.classList.remove('shake'); t.querySelector('.e').textContent = p.icon; toast('В команде новичок: ' + p.name + ' (' + RARITY[p.rarity].name + ')'); setTimeout(() => openPlace('nest'), 1200); }, 1600);
+  }
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg); }
+  else if (d.rstat) { rstat = d.rstat; openPlace('board'); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg); if (r.ok) rain('🪙'); }
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if (t.id === 'flag') toast(BL.togglePvE() ? 'Подняли белый флаг 🕊️' : 'Поднять Весёлого Роджера! ☠️');
+  else if (t.id === 'bubble') { BL.earn(120); toast('+120 🪙 — мина обезврежена'); }
+});
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k === 'escape') closeOv(); else if (k === 'm' || k === 'ь') ($('#ov').classList.contains('on') && !place ? closeOv() : openMap());
+  else if (k === 'e' || k === 'у') $('#bubble').click(); else if (k >= '1' && k <= '5') { slot = +k - 1; hud(); }
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (place && w !== 'hatch') openPlace(place); });
+hud(); tick();
+</script>
+</body>
+</html>

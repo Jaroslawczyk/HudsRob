@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Стикер-брутализм</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Golos+Text:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Golos Text', system-ui, sans-serif; color: #000; --y: #ffe94a; --p: #ff7eb6; --b: #5aa9ff; --g: #4ef08a; --o: #ff8c42; --w: #fffdf5; }
+  .U { font-family: 'Unbounded', sans-serif; font-weight: 900; text-transform: uppercase; }
+  .blk { background: var(--c, var(--w)); border: 3px solid #000; box-shadow: 5px 5px 0 #000; }
+  .press { cursor: pointer; transition: transform .08s, box-shadow .08s; }
+  .press:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 #000; }
+  .press:active { transform: translate(5px, 5px); box-shadow: 0 0 0 #000; }
+  .a { position: absolute; z-index: 5; }
+  .top { left: 12px; right: 12px; top: 12px; display: flex; gap: 10px; align-items: stretch; }
+  .logo { padding: 8px 14px; font-size: 20px; display: flex; align-items: center; transform: rotate(-2deg); }
+  .money { display: flex; align-items: center; gap: 6px; padding: 6px 12px; font: 700 18px 'Unbounded'; }
+  .money small { font: 700 10px 'Golos Text'; display: block; text-transform: uppercase; }
+  .tm { padding: 6px 12px; font: 700 13px 'Golos Text'; text-transform: uppercase; } .tm b { font: 900 18px 'Unbounded'; display: block; }
+  .sp { flex: 1; }
+  .menuB { padding: 0 18px; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  .menuB kbd { font: 700 12px 'Golos Text'; border: 2px solid #000; padding: 1px 6px; background: #fff; }
+  .side { right: 12px; top: 96px; display: flex; flex-direction: column; gap: 12px; }
+  .sq { width: 70px; height: 70px; display: grid; place-items: center; font-size: 30px; position: relative; }
+  .sq span { position: absolute; bottom: -12px; left: -6px; right: -6px; text-align: center; font: 900 10px 'Unbounded'; background: #000; color: #fff; padding: 2px; transform: rotate(-3deg); }
+  .pve { left: 12px; bottom: 12px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; font-size: 16px; }
+  .pve .sw { width: 64px; height: 32px; border: 3px solid #000; background: #fff; position: relative; }
+  .pve .sw i { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; background: #000; transition: .15s; }
+  .pve.on .sw { background: var(--g); } .pve.on .sw i { left: 34px; }
+  .hot { left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 10px; }
+  .hot .s { width: 62px; height: 62px; display: grid; place-items: center; font-size: 28px; position: relative; }
+  .hot .s.on { background: var(--y); transform: translateY(-8px) rotate(-4deg); }
+  .hot .s b { position: absolute; top: -10px; left: -10px; width: 22px; height: 22px; background: #000; color: #fff; font: 900 11px/22px 'Unbounded'; text-align: center; }
+  .sticker { left: 58%; top: 50%; padding: 8px 12px; transform: rotate(4deg); font: 900 14px 'Unbounded'; }
+  /* hub */
+  .hub { position: absolute; inset: 0; z-index: 50; display: none; flex-direction: column; padding: 16px; gap: 14px;
+    background: var(--y); background-image: linear-gradient(#0001 1px, transparent 1px), linear-gradient(90deg, #0001 1px, transparent 1px); background-size: 28px 28px; }
+  .hub.on { display: flex; animation: slide .25s ease-out; }
+  @keyframes slide { from { transform: translateY(30px); opacity: 0; } }
+  .htabs { display: flex; gap: 10px; align-items: center; }
+  .ht { padding: 10px 16px; font: 900 14px 'Unbounded'; text-transform: uppercase; }
+  .ht.on { background: #000; color: var(--y); transform: rotate(-2deg); box-shadow: 5px 5px 0 var(--p); }
+  .close { margin-left: auto; width: 52px; height: 52px; font: 900 22px 'Unbounded'; --c: var(--p); }
+  .hbody { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1.1fr; gap: 16px; }
+  .col { overflow: auto; padding: 4px 10px 10px 4px; }
+  .list .it { display: flex; align-items: center; gap: 12px; padding: 8px 12px; margin-bottom: 10px; }
+  .list .it.sel { --c: var(--b); transform: translateX(8px); }
+  .list .it .e { font-size: 28px; } .list .it .n { flex: 1; font-weight: 700; } .list .it .pr { font: 700 13px 'Unbounded'; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { padding: 5px 10px; font: 700 12px 'Unbounded'; text-transform: uppercase; }
+  .chip.on { --c: #000; color: #fff; }
+  .detail { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .detail .big { font-size: 96px; text-align: center; background: var(--r); border: 3px solid #000; line-height: 150px; }
+  .detail h2 { margin: 0; font: 900 26px 'Unbounded'; text-transform: uppercase; }
+  .rar { display: inline-block; padding: 2px 8px; border: 2px solid #000; font: 700 12px 'Unbounded'; text-transform: uppercase; }
+  .st { display: grid; grid-template-columns: 110px 1fr 40px; gap: 8px; align-items: center; font-weight: 700; }
+  .st i { height: 16px; border: 3px solid #000; background: #fff; position: relative; } .st i::after { content: ''; position: absolute; inset: 0; width: var(--v); background: #000; }
+  .acts { display: flex; gap: 10px; margin-top: auto; }
+  .btn { flex: 1; padding: 12px; font: 900 15px 'Unbounded'; text-transform: uppercase; text-align: center; }
+  .btn.dis { opacity: .4; pointer-events: none; }
+  .cart { position: absolute; right: 16px; bottom: 16px; z-index: 55; padding: 10px 14px; display: none; gap: 12px; align-items: center; --c: var(--p); }
+  .cart.on { display: flex; }
+  .cart .cnt { font: 900 30px 'Unbounded'; }
+  .cart .items { font-size: 22px; max-width: 220px; overflow: hidden; white-space: nowrap; }
+  .tot { font: 700 14px 'Golos Text'; }
+  .bars .r { display: grid; grid-template-columns: 30px 130px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; font-weight: 700; }
+  .bars .r i { height: 26px; border: 3px solid #000; background: var(--c, var(--w)); font: 700 12px/20px 'Unbounded'; padding-left: 6px; font-style: normal; white-space: nowrap; }
+  .bars .me i { --c: var(--p); }
+  .val { width: 100%; border-collapse: collapse; font-weight: 700; }
+  .val td, .val th { border: 3px solid #000; padding: 8px; background: var(--w); text-align: left; }
+  .val th { background: #000; color: #fff; font: 700 12px 'Unbounded'; text-transform: uppercase; }
+  .val tr.best td { background: var(--g); }
+  .auto { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .log { font: 700 13px 'Golos Text'; max-height: 150px; overflow: auto; background: #fff; border: 3px solid #000; padding: 8px; }
+  .petgrid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pc { width: 72px; padding: 6px; text-align: center; font-size: 28px; background: var(--r); }
+  .pc small { display: block; font: 700 11px 'Golos Text'; }
+  .pc.eq { outline: 4px dashed #000; outline-offset: 3px; }
+  .toast { position: absolute; left: 50%; top: 92px; transform: translateX(-50%) rotate(-2deg); z-index: 90; padding: 10px 16px; font: 900 14px 'Unbounded'; text-transform: uppercase;
+    display: none; --c: var(--g); white-space: nowrap; }
+  .toast.on { display: block; } .toast.bad { --c: var(--p); }
+  @container stage (max-height: 450px) {
+    .top, .side, .pve, .hot, .sticker { zoom: .62; } .side { top: 130px; }
+    .hub { zoom: .62; width: 161%; height: 161%; inset: auto; left: 0; top: 0; }
+    .cart { zoom: .62; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a top">
+    <div class="blk logo U" style="--c:var(--p)">💣 BOOMLAND</div>
+    <div id="money" style="display:contents"></div>
+    <div class="blk tm" style="--c:var(--b)">остров сокровищ<b id="tT"></b></div>
+    <div class="blk tm" style="--c:var(--o)">рейд<b id="tR"></b></div>
+    <div class="sp"></div>
+    <div class="blk menuB U press" data-hub="shop" style="--c:#000;color:#fff">МЕНЮ <kbd style="color:#000">M</kbd></div>
+  </div>
+  <div class="a side">
+    <div class="blk sq press" data-hub="shop" style="--c:var(--o)">🛒<span>Магазин</span></div>
+    <div class="blk sq press" data-hub="pets" style="--c:var(--b)">🥚<span>Петы</span></div>
+    <div class="blk sq press" data-hub="donate" style="--c:var(--g)">R$<span>Донат</span></div>
+    <div class="blk sq press" data-hub="rank" style="--c:var(--y)">🏆<span>Топ</span></div>
+  </div>
+  <div class="a blk pve press U" id="pve"><div class="sw"><i></i></div><span id="pveT"></span></div>
+  <div class="a hot" id="hot"></div>
+  <div class="a blk sticker press" id="prompt" style="--c:var(--y)">[E] РАЗМИНИРОВАТЬ +120🪙</div>
+
+  <div class="hub" id="hub">
+    <div class="htabs" id="htabs"></div>
+    <div class="hbody" id="hbody"></div>
+  </div>
+  <div class="blk cart" id="cart"></div>
+  <div class="blk toast" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS } = BL;
+const $ = (s) => document.querySelector(s);
+const TABS = { shop: 'Магазин', pets: 'Петы', donate: 'Донат', rank: 'Рейтинг', settings: 'Настройки' };
+const BG = { coins: 'var(--y)', gems: 'var(--b)', crypto: 'var(--o)', minerals: 'var(--p)' };
+let tab = null, cat = 'tools', sel = 'cut3', slot = 0, egg = 'egg1', stat = 'coins', target = 'epic';
+const cart = new Set();
+
+function toast(m, ok = true) { const t = $('#toast'); t.textContent = m; t.className = 'blk toast on' + (ok ? '' : ' bad'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600); }
+function hud() {
+  $('#money').innerHTML = ['coins', 'gems', 'crypto', 'minerals'].map((k) => `<div class="blk money" style="--c:${BG[k]}">${CUR[k].icon}<div><small>${CUR[k].name}</small>${BL.fmt(S[k])}</div></div>`).join('');
+  $('#pve').classList.toggle('on', S.pve); $('#pveT').textContent = S.pve ? 'PvE · мир' : 'PvP · война';
+  $('#pve').style.setProperty('--c', S.pve ? 'var(--w)' : 'var(--p)');
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#hot').innerHTML = ids.map((id, i) => `<div class="blk s press ${i === slot ? 'on' : ''}" data-slot="${i}"><b>${i + 1}</b>${id === 'hammer' ? '🔨' : BL.item(id).icon}</div>`).join('');
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+function bar(l, v) { return `<div class="st">${l}<i style="--v:${v}%"></i>${v}</div>`; }
+const VIEW = {
+  shop() {
+    const it = BL.item(sel); const own = S.owned.has(it.id), inCart = cart.has(it.id);
+    return `<div class="col"><div class="chips">${Object.keys(CATS).map((k) => `<div class="blk chip press ${k === cat ? 'on' : ''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].name}</div>`).join('')}</div>
+      <div class="list">${BL.byCat(cat).map((x) => `<div class="blk it press ${x.id === sel ? 'sel' : ''}" data-sel="${x.id}"><span class="e">${x.icon}</span><span class="n">${x.name}${S.owned.has(x.id) ? ' ✔' : ''}${cart.has(x.id) ? ' 🛒' : ''}</span><span class="pr">${BL.price(x)}</span></div>`).join('')}</div></div>
+      <div class="blk detail"><div class="big" style="--r:${RARITY[it.rarity].color}">${it.icon}</div>
+        <div><span class="rar" style="background:${RARITY[it.rarity].color}">${RARITY[it.rarity].name}</span></div><h2>${it.name}</h2><div>${it.desc}</div>
+        ${it.cat === 'build' ? bar('Доход', it.stats.power) : bar('Скорость', it.stats.speed) + bar('Мощь', it.stats.power) + bar('Дальность', it.stats.range)}
+        <div class="acts">${own ? `<div class="blk btn press ${S.equipped[it.cat] === it.id || it.cat === 'build' ? 'dis' : ''}" data-equip="${it.id}" style="--c:var(--b)">${S.equipped[it.cat] === it.id ? 'Надето' : it.cat === 'build' ? 'Построено' : 'Надеть'}</div>`
+          : `<div class="blk btn press" data-cart="${it.id}" style="--c:${inCart ? 'var(--p)' : 'var(--y)'}">${inCart ? '− Из корзины' : '+ В корзину'}</div>
+             <div class="blk btn press" data-now="${it.id}" style="--c:var(--g)">Купить · ${BL.price(it)}</div>`}</div></div>`;
+  },
+  pets() {
+    const e = EGGS.find((x) => x.id === egg);
+    return `<div class="col"><div class="chips">${EGGS.map((x) => `<div class="blk chip press ${x.id === egg ? 'on' : ''}" data-egg="${x.id}">${x.icon} ${x.name}</div>`).join('')}</div>
+      <div class="blk detail"><div class="bars">${Object.keys(e.pool).map((k) => `<div class="r"><span>${PETS[k].icon}</span><span>${PETS[k].name}</span><i style="width:${Math.min(100, e.pool[k] * 1.8 + 14)}%;--c:${RARITY[PETS[k].rarity].color}">${e.pool[k]}%</i></div>`).join('')}</div>
+        <div class="auto"><b>АВТО: крутить, пока не выпадет</b>${['rare', 'epic', 'legendary'].map((r) => `<div class="blk chip press ${r === target ? 'on' : ''}" data-target="${r}">${RARITY[r].name}+</div>`).join('')}</div>
+        <div class="acts"><div class="blk btn press" data-hatch="1" style="--c:var(--y)">x1 · ${BL.price(e)}</div><div class="blk btn press" data-auto style="--c:var(--g)">▶ Авто</div></div>
+        <div class="log" id="log">Лог открытий пуст</div></div></div>
+      <div class="col"><b class="U">Мои петы · ${S.pets.filter((p) => p.eq).length}/${S.petSlots} · x${BL.petMult().toFixed(2)}</b><p>Клик = надеть/снять</p>
+      <div class="petgrid">${S.pets.map((p) => `<div class="blk pc press ${p.eq ? 'eq' : ''}" data-pet="${p.uid}" style="--r:${RARITY[PETS[p.key].rarity].color}">${PETS[p.key].icon}<small>x${PETS[p.key].mult}</small></div>`).join('')}</div></div>`;
+  },
+  donate() {
+    const packs = DONATE.filter((d) => d.kind === 'pack'); const best = packs.reduce((a, b) => (b.give.coins / b.price > a.give.coins / a.price ? b : a));
+    return `<div class="col"><b class="U">Что выгоднее — честная таблица</b><p>Демо-баланс R$ ${S.robux}</p>
+      <table class="val"><tr><th>Пакет</th><th>Даёт</th><th>🪙 за 1 R$</th><th></th></tr>${packs.map((d) => `<tr class="${d === best ? 'best' : ''}"><td>${d.icon} ${d.name}</td><td>${Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ')}</td><td>${Math.round(d.give.coins / d.price)}${d === best ? ' ★' : ''}</td><td><div class="blk chip press" data-don="${d.id}" style="--c:var(--g)">R$ ${d.price}</div></td></tr>`).join('')}</table></div>
+      <div class="col">${DONATE.filter((d) => d.kind !== 'pack').map((d) => `<div class="blk it press" style="display:flex;gap:10px;align-items:center;padding:10px;margin-bottom:10px;--c:${S.passes.has(d.id) ? 'var(--g)' : 'var(--w)'}" data-don="${d.id}"><span style="font-size:30px">${d.icon}</span><span style="flex:1"><b>${d.name}</b><br><small>${d.desc}</small></span><b class="U">${S.passes.has(d.id) ? '✔' : 'R$ ' + d.price}</b></div>`).join('')}</div>`;
+  },
+  rank() {
+    const rows = RANKS[stat]; const max = rows[0].value;
+    return `<div class="col" style="grid-column:1/-1"><div class="chips">${STATS.map((s) => `<div class="blk chip press ${s.id === stat ? 'on' : ''}" data-stat="${s.id}">${s.name}</div>`).join('')}</div>
+      <div class="bars">${rows.map((r, i) => `<div class="r ${r.me ? 'me' : ''}"><b>${i + 1}</b><span>${r.name}</span><i style="width:${Math.max(8, r.value / max * 100)}%">${BL.fmt(r.value)}</i></div>`).join('')}</div></div>`;
+  },
+  settings() {
+    const opt = (n, on) => `<div class="blk it press" style="display:flex;justify-content:space-between;padding:14px;margin-bottom:12px;--c:${on ? 'var(--g)' : 'var(--w)'}" data-opt><b>${n}</b><b class="U">${on ? 'ВКЛ' : 'ВЫКЛ'}</b></div>`;
+    return `<div class="col">${opt('Скримеры', true)}${opt('Музыка', true)}${opt('Тряска экрана при взрыве', false)}${opt('Показывать урон цифрами', true)}</div>
+      <div class="col">${Object.keys(CUR).filter((k) => k !== 'robux').map((k) => `<div class="blk" style="padding:10px;margin-bottom:10px;--c:${BG[k]}"><b>${CUR[k].icon} ${CUR[k].name}</b></div>`).join('')}</div>`;
+  },
+};
+function openHub(t) {
+  tab = t; $('#hub').classList.add('on');
+  $('#htabs').innerHTML = Object.keys(TABS).map((k) => `<div class="blk ht press ${k === t ? 'on' : ''}" data-hub="${k}">${TABS[k]}</div>`).join('') + '<div class="blk close press" data-x>✕</div>';
+  render();
+}
+function render() {
+  if (!tab) return; $('#hbody').innerHTML = VIEW[tab]();
+  $('#hbody').style.gridTemplateColumns = tab === 'rank' ? '1fr' : '';
+  const items = [...cart].map(BL.item);
+  $('#cart').classList.toggle('on', tab === 'shop' && cart.size > 0);
+  const sum = {}; items.forEach((i) => (sum[i.cur] = (sum[i.cur] || 0) + i.price));
+  $('#cart').innerHTML = `<span class="cnt">🛒${cart.size}</span><div><div class="items">${items.map((i) => i.icon).join('')}</div><div class="tot">Итого: ${Object.keys(sum).map((k) => BL.price({ price: sum[k], cur: k })).join(' + ')}</div></div><div class="blk btn press" data-checkout style="--c:var(--g)">Оплатить</div>`;
+}
+function closeHub() { tab = null; $('#hub').classList.remove('on'); $('#cart').classList.remove('on'); }
+function logLine(s) { const l = $('#log'); if (l.textContent.startsWith('Лог')) l.innerHTML = ''; l.insertAdjacentHTML('afterbegin', `<div>${s}</div>`); }
+let auto = null;
+function runAuto() {
+  if (auto) { clearInterval(auto); auto = null; return; }
+  const order = Object.keys(RARITY); let n = 0;
+  auto = setInterval(() => {
+    const r = BL.hatch(egg); if (!r.ok) { clearInterval(auto); auto = null; logLine('⛔ ' + r.msg); return; }
+    const p = r.pets[0]; n++; logLine(`#${n} ${p.icon} ${p.name} — ${RARITY[p.rarity].name}`);
+    if (order.indexOf(p.rarity) >= order.indexOf(target)) { clearInterval(auto); auto = null; toast('Выпал ' + p.name + '!'); }
+  }, 350);
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-hub],[data-x],[data-cat],[data-sel],[data-cart],[data-now],[data-equip],[data-checkout],[data-egg],[data-target],[data-hatch],[data-auto],[data-pet],[data-don],[data-stat],[data-slot],[data-opt],#pve,#prompt');
+  if (!t) return; const d = t.dataset;
+  if (d.hub) openHub(d.hub);
+  else if ('x' in d) closeHub();
+  else if (d.cat) { cat = d.cat; sel = BL.byCat(cat)[1].id; render(); }
+  else if (d.sel) { sel = d.sel; render(); }
+  else if (d.cart) { cart.has(d.cart) ? cart.delete(d.cart) : cart.add(d.cart); render(); }
+  else if (d.now || d.equip) { const r = BL.buy(d.now || d.equip); toast(r.msg, r.ok); cart.delete(d.now); }
+  else if ('checkout' in d) { const ok = [], fail = []; [...cart].forEach((id) => (BL.buy(id).ok ? ok : fail).push(id)); fail.length ? toast('Не хватило на ' + fail.length + ' шт.', false) : toast('Куплено: ' + ok.length + ' шт.'); cart.clear(); fail.forEach((f) => cart.add(f)); render(); }
+  else if (d.egg) { egg = d.egg; render(); }
+  else if (d.target) { target = d.target; render(); }
+  else if (d.hatch) { const r = BL.hatch(egg); if (!r.ok) return toast(r.msg, false); const p = r.pets[0]; toast(p.icon + ' ' + p.name); }
+  else if ('auto' in d) runAuto();
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); }
+  else if (d.stat) { stat = d.stat; render(); }
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if ('opt' in d) { const b = t.querySelector('.U'); const on = b.textContent === 'ВКЛ'; b.textContent = on ? 'ВЫКЛ' : 'ВКЛ'; t.style.setProperty('--c', on ? 'var(--w)' : 'var(--g)'); }
+  else if (t.id === 'pve') BL.togglePvE();
+  else if (t.id === 'prompt') { BL.earn(120); toast('+120 🪙'); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeHub();
+  else if (e.key.toLowerCase() === 'm' || e.key === 'ь') tab ? closeHub() : openHub('shop');
+  else if (e.key >= '1' && e.key <= '5' && !tab) { slot = +e.key - 1; hud(); }
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (!(tab === 'pets' && auto)) render(); });
+hud(); tick();
+</script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Карамельный симулятор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Rubik+Bubbles&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Nunito', system-ui, sans-serif; color: #fff; --ink: #1d1530; }
+  .t { -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; font-weight: 900; }
+  .grp { position: absolute; z-index: 5; }
+  /* currencies */
+  .cur { left: 14px; top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .pill { display: flex; align-items: center; gap: 8px; height: 40px; min-width: 170px; padding: 0 6px 0 4px;
+    background: linear-gradient(#ffffff33, #00000022), var(--c); border: 3px solid var(--ink); border-radius: 22px;
+    box-shadow: 0 4px 0 var(--ink); font-size: 20px; }
+  .pill .ic { width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 3px solid var(--ink);
+    display: grid; place-items: center; font-size: 18px; color: var(--ink); font-weight: 900; }
+  .pill .v { flex: 1; }
+  .pill .plus { width: 28px; height: 28px; border-radius: 50%; background: #43d35b; border: 3px solid var(--ink);
+    font-size: 20px; line-height: 18px; text-align: center; cursor: pointer; pointer-events: auto; }
+  .pill.small { height: 32px; min-width: 130px; font-size: 16px; }
+  .pill.small .ic { width: 26px; height: 26px; font-size: 14px; }
+  /* main buttons */
+  .menu { left: 14px; top: 214px; display: grid; grid-template-columns: repeat(2, 78px); gap: 10px; }
+  .mb { position: relative; width: 78px; height: 78px; border: 4px solid var(--ink); border-radius: 18px; cursor: pointer;
+    background: linear-gradient(#ffffff55, transparent 50%), var(--c); box-shadow: 0 6px 0 var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform .12s; }
+  .mb:hover { transform: translateY(-3px) rotate(-3deg) scale(1.05); }
+  .mb:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .mb .e { font-size: 32px; line-height: 1; filter: drop-shadow(0 3px 0 #0005); }
+  .mb .l { font-size: 13px; margin-top: 2px; }
+  .badge { position: absolute; top: -10px; right: -10px; min-width: 26px; height: 26px; border-radius: 13px; background: #ff3d5a;
+    border: 3px solid var(--ink); font-size: 14px; display: grid; place-items: center; animation: bob 1s ease-in-out infinite; }
+  .mb.glow { animation: glow 1.6s ease-in-out infinite; }
+  @keyframes glow { 50% { box-shadow: 0 6px 0 var(--ink), 0 0 26px 6px #ffe14d; } }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+  /* event */
+  .event { left: 50%; top: 12px; transform: translateX(-50%); display: flex; gap: 10px; }
+  .ev { padding: 8px 16px; border: 4px solid var(--ink); border-radius: 16px; background: linear-gradient(#ffffff44, transparent), var(--c);
+    box-shadow: 0 5px 0 var(--ink); font-size: 18px; text-align: center; }
+  .ev small { display: block; font-size: 12px; opacity: .9; }
+  /* right */
+  .boosts { right: 14px; top: 14px; display: flex; gap: 8px; }
+  .boost { width: 54px; height: 54px; border-radius: 50%; border: 4px solid var(--ink); background: var(--c);
+    display: grid; place-items: center; font-size: 24px; position: relative; box-shadow: 0 4px 0 var(--ink); }
+  .boost span { position: absolute; bottom: -10px; font-size: 12px; background: var(--ink); padding: 1px 6px; border-radius: 8px; }
+  .pve { left: 14px; bottom: 16px; width: 150px; height: 58px; border: 4px solid var(--ink); border-radius: 18px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 18px; box-shadow: 0 5px 0 var(--ink);
+    background: linear-gradient(#ffffff55, transparent 60%), #36c46a; transition: background .2s; }
+  .pve.off { background: linear-gradient(#ffffff55, transparent 60%), #ff4d4d; }
+  .pve .e { font-size: 28px; }
+  .pve small { display: block; font-size: 11px; }
+  /* hotbar */
+  .hot { left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; }
+  .slot { width: 66px; height: 66px; border: 4px solid var(--ink); border-radius: 14px; background: #ffffffdd; position: relative;
+    display: grid; place-items: center; font-size: 32px; cursor: pointer; box-shadow: 0 5px 0 var(--ink); }
+  .slot.on { background: #ffe14d; transform: translateY(-8px); }
+  .slot i { position: absolute; left: 4px; top: 0; font-style: normal; font-size: 14px; color: var(--ink); }
+  /* world prompt */
+  .prompt { left: 58%; top: 52%; display: flex; flex-direction: column; align-items: center; gap: 4px; animation: bob 1.4s ease-in-out infinite; cursor: pointer; }
+  .prompt .k { width: 44px; height: 44px; border-radius: 12px; background: #fff; color: var(--ink); border: 4px solid var(--ink); font-size: 22px; display: grid; place-items: center; }
+  .prompt .n { font-size: 16px; }
+  .float { position: absolute; z-index: 30; font-size: 30px; pointer-events: none; animation: flt 1.1s ease-out forwards; }
+  @keyframes flt { to { transform: translateY(-90px) scale(1.3); opacity: 0; } }
+  /* windows */
+  .veil { position: absolute; inset: 0; z-index: 50; background: #1d153088; display: none; align-items: center; justify-content: center; }
+  .veil.on { display: flex; }
+  .win { width: 820px; max-height: 600px; background: #fff7e8; border: 6px solid var(--ink); border-radius: 30px; color: var(--ink);
+    box-shadow: 0 10px 0 var(--ink); display: flex; flex-direction: column; animation: pop .35s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+  .win-h { position: relative; margin: -6px -6px 0; height: 74px; border: 6px solid var(--ink); border-radius: 30px 30px 0 0;
+    background: linear-gradient(#ffffff55, transparent), var(--c); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #fff; }
+  .win-h .e { font-size: 38px; }
+  .win-h h2 { margin: 0; font-size: 34px; font-family: 'Rubik Bubbles', 'Nunito', sans-serif; font-weight: 400; letter-spacing: 1px; }
+  .x { position: absolute; right: -18px; top: -18px; width: 54px; height: 54px; border-radius: 50%; background: #ff4d4d; border: 5px solid var(--ink);
+    font-size: 26px; color: #fff; cursor: pointer; box-shadow: 0 4px 0 var(--ink); }
+  .x:hover { transform: rotate(90deg); transition: .2s; }
+  .tabs { display: flex; gap: 8px; padding: 14px 20px 0; flex-wrap: wrap; }
+  .tab { border: 4px solid var(--ink); border-radius: 14px; padding: 6px 14px; background: #fff; font: 900 16px 'Nunito'; color: var(--ink); cursor: pointer; }
+  .tab.on { background: #ffe14d; transform: translateY(-3px); box-shadow: 0 3px 0 var(--ink); }
+  .body { padding: 14px 20px 20px; overflow: auto; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .card { border: 4px solid var(--ink); border-radius: 18px; padding: 10px; text-align: center; position: relative;
+    background: linear-gradient(170deg, #fff 30%, color-mix(in srgb, var(--r) 35%, #fff)); }
+  .card .ico { font-size: 46px; height: 60px; line-height: 60px; }
+  .card .nm { font-weight: 900; font-size: 15px; min-height: 40px; }
+  .card .rr { font-size: 11px; font-weight: 900; color: #fff; background: var(--r); border-radius: 8px; padding: 1px 8px; display: inline-block; }
+  .card .ds { font-size: 11px; opacity: .75; min-height: 30px; margin: 4px 0; }
+  .btn { border: 4px solid var(--ink); border-radius: 14px; padding: 6px 10px; width: 100%; font: 900 16px 'Nunito'; color: #fff; cursor: pointer;
+    background: linear-gradient(#ffffff55, transparent 60%), #43d35b; box-shadow: 0 4px 0 var(--ink); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn.no { background: #b9b0c7; }
+  .btn.own { background: linear-gradient(#ffffff55, transparent 60%), #3d9bff; }
+  .btn.eq { background: #ffe14d; color: var(--ink); }
+  .btn.rbx { background: linear-gradient(#ffffff55, transparent 60%), #1fb35a; }
+  .ribbon { position: absolute; top: 10px; right: -8px; background: #ff3d5a; color: #fff; font-size: 12px; font-weight: 900; padding: 3px 10px; border: 3px solid var(--ink); border-radius: 8px; transform: rotate(8deg); }
+  /* eggs */
+  .eggs { display: flex; gap: 14px; margin-bottom: 14px; }
+  .egg { flex: 1; border: 4px solid var(--ink); border-radius: 20px; padding: 10px; text-align: center; background: #fff; }
+  .egg .ico { font-size: 54px; animation: bob 2s ease-in-out infinite; }
+  .egg .pool { display: flex; justify-content: center; gap: 4px; font-size: 18px; margin: 4px 0 8px; }
+  .egg .row { display: flex; gap: 6px; }
+  .pets { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+  .pet { border: 4px solid var(--ink); border-radius: 14px; background: color-mix(in srgb, var(--r) 30%, #fff); text-align: center; padding: 4px; cursor: pointer; position: relative; }
+  .pet .ico { font-size: 30px; } .pet .m { font-size: 12px; font-weight: 900; }
+  .pet.eq::after { content: '✔'; position: absolute; top: -10px; right: -8px; background: #43d35b; color: #fff; border: 3px solid var(--ink); border-radius: 50%; width: 24px; height: 24px; font-size: 13px; line-height: 18px; }
+  .hint { font-size: 14px; font-weight: 800; opacity: .7; margin: 6px 0; }
+  /* hatch */
+  .hatch { position: absolute; inset: 0; z-index: 80; background: radial-gradient(#3b2a6b, #120b26); display: none; align-items: center; justify-content: center; gap: 40px; }
+  .hatch.on { display: flex; }
+  .hatch .one { position: relative; width: 200px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .rays { position: absolute; width: 380px; height: 380px; top: -60px; background: repeating-conic-gradient(var(--r) 0 10deg, transparent 10deg 20deg); border-radius: 50%;
+    mask: radial-gradient(#000 20%, transparent 70%); -webkit-mask: radial-gradient(#000 20%, transparent 70%); opacity: 0; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hatch .big { font-size: 120px; position: relative; }
+  .hatch .shake { animation: shake .25s ease-in-out 6; }
+  @keyframes shake { 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
+  .hatch .lbl { position: relative; font-size: 26px; opacity: 0; }
+  .hatch .done .rays, .hatch .done .lbl { opacity: 1; transition: opacity .3s; }
+  .hatch .done .big { animation: pop .4s cubic-bezier(.3,1.6,.5,1); }
+  .hatch .tap { position: absolute; bottom: 30px; font-size: 18px; opacity: .8; }
+  /* list rows */
+  .row-l { display: flex; align-items: center; gap: 12px; border: 4px solid var(--ink); border-radius: 16px; padding: 8px 14px; margin-bottom: 8px; background: #fff; font-weight: 900; }
+  .row-l.me { background: #ffe14d; }
+  .row-l .pos { width: 40px; font-size: 22px; text-align: center; }
+  .row-l .nm { flex: 1; font-size: 18px; } .row-l .vv { font-size: 18px; }
+  .bar { height: 18px; border: 3px solid var(--ink); border-radius: 10px; background: #fff; overflow: hidden; flex: 1; }
+  .bar i { display: block; height: 100%; background: #43d35b; }
+  .toast { position: absolute; left: 50%; bottom: 110px; transform: translateX(-50%) scale(0); z-index: 90; padding: 10px 22px; border-radius: 18px;
+    border: 4px solid var(--ink); background: #43d35b; font-size: 20px; transition: transform .25s cubic-bezier(.3,1.6,.5,1); white-space: nowrap; }
+  .toast.bad { background: #ff4d4d; }
+  .toast.on { transform: translateX(-50%) scale(1); }
+  @container stage (max-height: 450px) {
+    .cur, .menu, .boosts, .event, .hot, .pve { zoom: .62; }
+    .menu { top: 200px; }
+    .win { zoom: .58; }
+    .hatch { zoom: .6; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="grp cur" id="cur"></div>
+  <div class="grp menu">
+    <div class="mb" style="--c:#ff9d2e" data-open="shop"><span class="e">🛒</span><span class="l t">Магазин</span></div>
+    <div class="mb" style="--c:#b46cff" data-open="pets"><span class="e">🐾</span><span class="l t">Петы</span><span class="badge t">!</span></div>
+    <div class="mb glow" style="--c:#2ecc71" data-open="donate"><span class="e">💎</span><span class="l t">Донат</span></div>
+    <div class="mb" style="--c:#ffcc33" data-open="rank"><span class="e">🏆</span><span class="l t">Топ</span></div>
+    <div class="mb" style="--c:#3d9bff" data-open="quests"><span class="e">📜</span><span class="l t">Квесты</span><span class="badge t">1</span></div>
+    <div class="mb" style="--c:#ff5fa2" data-open="info"><span class="e">ℹ️</span><span class="l t">Инфо</span></div>
+  </div>
+  <div class="grp event">
+    <div class="ev t" style="--c:#ffb020">🏝️ Остров сокровищ <span id="tTimer">4:32</span><small>сундуки появятся в центре моря</small></div>
+    <div class="ev t" style="--c:#6bb36b">🧟 Рейд <span id="tRaid">0:41</span><small>зомби-застройщики идут!</small></div>
+  </div>
+  <div class="grp boosts">
+    <div class="boost t" style="--c:#ff5fa2">🍀<span>x1.2</span></div>
+    <div class="boost t" style="--c:#3d9bff" id="petBoost">🐾<span>x1.4</span></div>
+  </div>
+  <div class="grp pve t" id="pve"><span class="e">🛡️</span><div>PvE: ВКЛ<small>вас не атакуют</small></div></div>
+  <div class="grp hot" id="hot"></div>
+  <div class="grp prompt t" id="prompt"><div class="k">E</div><div class="n">Разминировать 🟡</div></div>
+
+  <div class="veil" id="veil"><div class="win" id="win"></div></div>
+  <div class="hatch t" id="hatch"></div>
+  <div class="toast t" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS, QUESTS } = BL;
+const $ = (s) => document.querySelector(s);
+let view = null, shopCat = 'tools', rankStat = 'coins', slot = 0;
+
+function toast(msg, ok = true) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast t on' + (ok ? '' : ' bad');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600);
+}
+function renderHud() {
+  $('#cur').innerHTML = `
+    <div class="pill t" style="--c:#ffb800"><span class="ic">🪙</span><span class="v">${BL.fmt(S.coins)}</span><span class="plus" data-open="donate">+</span></div>
+    <div class="pill t" style="--c:#2fb4ff"><span class="ic">💎</span><span class="v">${BL.fmt(S.gems)}</span><span class="plus" data-open="donate">+</span></div>
+    <div class="pill t small" style="--c:#ff9a1f"><span class="ic">₿</span><span class="v">${BL.full(S.crypto)}</span></div>
+    <div class="pill t small" style="--c:#a77bff"><span class="ic">⛏</span><span class="v">${BL.fmt(S.minerals)}</span></div>`;
+  const pve = $('#pve');
+  pve.classList.toggle('off', !S.pve);
+  pve.querySelector('div').innerHTML = S.pve ? 'PvE: ВКЛ<small>вас не атакуют</small>' : 'PvP: ВКЛ<small>рейды разрешены!</small>';
+  const bar = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#hot').innerHTML = bar.map((id, i) => {
+    const it = BL.item(id); const ic = id === 'hammer' ? '🔨' : (it ? it.icon : '·');
+    return `<div class="slot ${i === slot ? 'on' : ''}" data-slot="${i}" title="${it ? it.name : 'Молоток'}"><i>${i + 1}</i>${ic}</div>`;
+  }).join('');
+  $('#petBoost span').textContent = 'x' + BL.petMult().toFixed(1);
+}
+function tick() { $('#tTimer').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tRaid').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+const WIN = {
+  shop: { c: '#ff9d2e', e: '🛒', t: 'Лавка Бабушки Зины', body() {
+    return `<div class="tabs">${Object.keys(CATS).map((k) => `<button class="tab ${k === shopCat ? 'on' : ''}" data-cat="${k}">${CATS[k].icon} ${CATS[k].name}</button>`).join('')}</div>
+      <div class="body"><div class="grid">${BL.byCat(shopCat).map((it) => {
+        const own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id;
+        const lbl = eq ? 'В руках' : own ? (it.cat === 'build' ? 'Построено' : 'Надеть') : BL.price(it);
+        const cls = eq ? 'eq' : own ? 'own' : it.cur === 'robux' ? 'rbx' : BL.canAfford(it) ? '' : 'no';
+        return `<div class="card" style="--r:${RARITY[it.rarity].color}"><div class="ico">${it.icon}</div><span class="rr">${RARITY[it.rarity].name}</span>
+          <div class="nm">${it.name}</div><div class="ds">${it.desc}</div><button class="btn t ${cls}" data-buy="${it.id}">${lbl}</button></div>`;
+      }).join('')}</div></div>`; } },
+  pets: { c: '#b46cff', e: '🐾', t: 'Инкубатор петов', body() {
+    return `<div class="body"><div class="eggs">${EGGS.map((e) => `<div class="egg"><div class="ico">${e.icon}</div><b>${e.name}</b>
+        <div class="pool">${Object.keys(e.pool).map((k) => `<span title="${PETS[k].name} ${e.pool[k]}%">${PETS[k].icon}</span>`).join('')}</div>
+        <div class="row"><button class="btn t ${e.cur === 'robux' ? 'rbx' : ''}" data-hatch="${e.id}" data-n="1">x1 · ${BL.price(e)}</button>
+        <button class="btn t own" data-hatch="${e.id}" data-n="3">x3</button></div></div>`).join('')}</div>
+      <div class="hint">Ваши петы — нажмите, чтобы надеть/снять (слоты ${S.pets.filter((p) => p.eq).length}/${S.petSlots}) · бонус x${BL.petMult().toFixed(2)}</div>
+      <div class="pets">${S.pets.map((p) => { const d = PETS[p.key]; return `<div class="pet ${p.eq ? 'eq' : ''}" style="--r:${RARITY[d.rarity].color}" data-pet="${p.uid}" title="${d.name}"><div class="ico">${d.icon}</div><div class="m">x${d.mult}</div></div>`; }).join('')}</div></div>`; } },
+  donate: { c: '#2ecc71', e: '💎', t: 'Донат-лавка', body() {
+    return `<div class="body"><div class="hint">Демо-баланс: R$ ${BL.full(S.robux)} — покупки не настоящие</div>
+      <div class="grid">${DONATE.filter((d) => d.kind === 'pack').map((d) => `<div class="card" style="--r:#ffcc33">${d.tag ? `<span class="ribbon">${d.tag}</span>` : ''}<div class="ico">${d.icon}</div>
+        <div class="nm">${d.name}</div><div class="ds">${Object.keys(d.give).map((k) => CUR[k].icon + ' ' + BL.fmt(d.give[k])).join(' + ')}</div><button class="btn t rbx" data-don="${d.id}">R$ ${d.price}</button></div>`).join('')}</div>
+      <div class="hint" style="margin-top:14px">Навсегда и бусты</div>
+      <div class="grid">${DONATE.filter((d) => d.kind !== 'pack').map((d) => `<div class="card" style="--r:#b46cff"><div class="ico">${d.icon}</div><div class="nm">${d.name}</div><div class="ds">${d.desc}</div>
+        <button class="btn t ${S.passes.has(d.id) ? 'eq' : 'rbx'}" data-don="${d.id}">${S.passes.has(d.id) ? 'Есть ✔' : 'R$ ' + d.price}</button></div>`).join('')}</div></div>`; } },
+  rank: { c: '#ffb800', e: '🏆', t: 'Топ сервера', body() {
+    const medal = ['🥇', '🥈', '🥉'];
+    return `<div class="tabs">${STATS.map((s) => `<button class="tab ${s.id === rankStat ? 'on' : ''}" data-stat="${s.id}">${s.name}</button>`).join('')}</div>
+      <div class="body">${RANKS[rankStat].slice(0, 10).map((r, i) => `<div class="row-l ${r.me ? 'me' : ''}"><span class="pos">${medal[i] || i + 1}</span><span class="nm">${r.name}</span><span class="vv">${BL.fmt(r.value)}</span></div>`).join('')}</div>`; } },
+  quests: { c: '#3d9bff', e: '📜', t: 'Задания дня', body() {
+    return `<div class="body">${QUESTS.map((q) => `<div class="row-l"><span class="nm">${q.text}<div class="bar"><i style="width:${q.done / q.need * 100}%"></i></div></span>
+      <span class="vv">${q.done}/${q.need}</span><button class="btn t ${q.done >= q.need ? '' : 'no'}" style="width:150px" data-claim="${q.id}">${q.done >= q.need ? 'Забрать ' : ''}${q.reward}</button></div>`).join('')}</div>`; } },
+  info: { c: '#ff5fa2', e: 'ℹ️', t: 'Как играть', body() {
+    return `<div class="body">${Object.keys(CUR).filter((k) => k !== 'robux').map((k) => `<div class="row-l"><span class="pos">${CUR[k].icon}</span><span class="nm">${CUR[k].name}</span><span style="font-size:14px">${{ coins: 'с мин, тратятся у Бабушки Зины', gems: 'прокачка петов', crypto: 'майнинг-фермы, крадут в рейдах', minerals: 'каменоломня, меняются на бафы' }[k]}</span></div>`).join('')}
+      <div class="row-l"><span class="pos">🔊</span><span class="nm">Скримеры</span><button class="btn t own" style="width:120px">Вкл</button></div>
+      <div class="row-l"><span class="pos">👵</span><span class="nm">Обучение с Бабушкой Зиной</span><button class="btn t" style="width:120px">Заново</button></div></div>`; } },
+};
+
+function open(k) {
+  view = k; const w = WIN[k];
+  $('#win').style.setProperty('--c', w.c);
+  $('#win').innerHTML = `<div class="win-h" style="--c:${w.c}"><span class="e">${w.e}</span><h2 class="t">${w.t}</h2><button class="x t" data-close>✕</button></div>${w.body()}`;
+  $('#veil').classList.add('on');
+}
+function refresh() { if (view) { const st = $('#win .body')?.scrollTop; open(view); if ($('#win .body')) $('#win .body').scrollTop = st; } }
+function close() { view = null; $('#veil').classList.remove('on'); }
+
+function hatchShow(pets) {
+  const h = $('#hatch');
+  const egg = EGGS.find((e) => e.id === h.dataset.egg);
+  h.innerHTML = pets.map((p) => `<div class="one" style="--r:${RARITY[p.rarity].color}"><div class="rays"></div><div class="big shake">${egg.icon}</div><div class="lbl">${p.name}<br><span style="color:${RARITY[p.rarity].color}">${RARITY[p.rarity].name} · x${p.mult}</span></div></div>`).join('') + '<div class="tap">нажмите, чтобы продолжить</div>';
+  h.classList.add('on');
+  setTimeout(() => h.querySelectorAll('.one').forEach((o, i) => { o.classList.add('done'); o.querySelector('.big').classList.remove('shake'); o.querySelector('.big').textContent = pets[i].icon; }), 1500);
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-open],[data-close],[data-cat],[data-buy],[data-hatch],[data-pet],[data-don],[data-stat],[data-claim],[data-slot],#pve,#prompt,#hatch,#veil');
+  if (!t) return;
+  if (t.id === 'veil' && e.target !== t) return;
+  const d = t.dataset;
+  if (d.open) open(d.open);
+  else if ('close' in d || t.id === 'veil') close();
+  else if (d.cat) { shopCat = d.cat; refresh(); }
+  else if (d.stat) { rankStat = d.stat; refresh(); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg, r.ok); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); }
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if (d.claim) { const q = QUESTS.find((x) => x.id === d.claim); if (q.done >= q.need) { q.done = 0; toast('Награда: ' + q.reward); refresh(); } }
+  else if (d.hatch) { const r = BL.hatch(d.hatch, +d.n); if (!r.ok) return toast(r.msg, false); $('#hatch').dataset.egg = d.hatch; hatchShow(r.pets); }
+  else if (d.slot) { slot = +d.slot; renderHud(); }
+  else if (t.id === 'pve') toast(BL.togglePvE() ? '🛡️ Щит включён' : '⚔️ PvP включён!', true);
+  else if (t.id === 'hatch') { t.classList.remove('on'); refresh(); }
+  else if (t.id === 'prompt') defuse(e);
+});
+function defuse(e) {
+  const r = BL.ZONES[1].reward; BL.earn(r);
+  const f = document.createElement('div'); f.className = 'float t'; f.textContent = '+' + r + ' 🪙';
+  const st = $('#stage').getBoundingClientRect(), k = st.width / $('#stage').offsetWidth;
+  f.style.left = (e.clientX - st.left) / k + 'px'; f.style.top = (e.clientY - st.top) / k - 40 + 'px';
+  $('#stage').append(f); setTimeout(() => f.remove(), 1100);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') close();
+  if (e.key >= '1' && e.key <= '5') { slot = +e.key - 1; renderHud(); }
+  if (e.key.toLowerCase() === 'e' || e.key === 'у') $('#prompt').click();
+});
+BL.on((w) => { if (w === 'tick') return tick(); renderHud(); if (w !== 'earn') refresh(); });
+renderHud(); tick();
+</script>
+</body>
+</html>

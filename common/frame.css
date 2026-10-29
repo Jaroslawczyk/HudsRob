@@ -1,0 +1,61 @@
+/* Viewer frame + the fake game scene shared by all concepts. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #101216; }
+* { box-sizing: border-box; }
+
+.viewer-bar {
+  position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 1000;
+  display: flex; align-items: center; gap: 6px; padding: 0 10px;
+  background: #0b0c0f; border-bottom: 1px solid #23262d;
+  font: 13px/1 system-ui, -apple-system, 'Segoe UI', sans-serif; color: #c9ced8;
+}
+.vb-btn {
+  color: #c9ced8; text-decoration: none; background: #1b1e24; border: 1px solid #2c3039;
+  padding: 7px 11px; border-radius: 7px; cursor: pointer; font: inherit; white-space: nowrap;
+}
+.vb-btn:hover { background: #262a33; color: #fff; }
+.vb-btn.on { background: #3d6bff; border-color: #3d6bff; color: #fff; }
+.vb-title { font-weight: 600; color: #fff; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vb-gap { flex: 1; }
+@media (max-width: 640px) { .vb-title { display: none; } .vb-btn { padding: 7px 8px; } }
+
+#stage {
+  position: absolute; left: 50%; top: calc(50% + 22px); transform-origin: center center;
+  overflow: hidden; container-type: size; container-name: stage; border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6); user-select: none; -webkit-user-select: none;
+}
+
+/* ---------- fake game world ---------- */
+.scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.scene .sky { position: absolute; inset: 0; background: linear-gradient(#5db7ff 0%, #9fd6ff 38%, #d8f0ff 46%); }
+.scene .sun { position: absolute; width: 90px; height: 90px; right: 14%; top: 7%; border-radius: 50%;
+  background: radial-gradient(#fff9d6, #ffe680 60%, transparent 70%); filter: blur(1px); }
+.scene .far { position: absolute; top: 40%; height: 26px; border-radius: 50% 50% 0 0; background: #5c9a6a; opacity: .75; }
+.scene .f1 { left: 4%; width: 18%; } .scene .f2 { left: 62%; width: 12%; height: 18px; top: 41.2%; } .scene .f3 { left: 80%; width: 16%; }
+.scene .sea { position: absolute; left: 0; right: 0; top: 44%; bottom: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 2px, transparent 2px 14px), linear-gradient(#2f8fd8, #1767b0);
+  animation: sea 6s linear infinite; }
+@keyframes sea { to { background-position: 0 28px, 0 0; } }
+.scene .land { position: absolute; left: -10%; right: -10%; top: 47%; height: 90%;
+  transform: perspective(500px) rotateX(58deg); transform-origin: top center;
+  background: #e2c98f; border-radius: 40% 40% 0 0; }
+.scene .field { position: absolute; left: 24%; right: 24%; top: 2%; bottom: 38%;
+  background:
+    radial-gradient(circle, #333 0 5px, #888 5px 7px, transparent 8px) 0 0 / 60px 52px,
+    linear-gradient(#ff3b3b 0 22%, #ff8a2a 22% 44%, #ffd23c 44% 66%, #3ecf5a 66%);
+  opacity: .85; border-radius: 6px; }
+.scene .house { position: absolute; right: 6%; top: 50%; width: 120px; height: 90px; background: #f2f2f2; border: 4px solid #6b4a2f; }
+.scene .house::before { content: ''; position: absolute; left: -18px; right: -18px; top: -54px; height: 54px;
+  background: #d9483b; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.scene .house i { position: absolute; left: 42px; bottom: 0; width: 28px; height: 44px; background: #6b4a2f; }
+.scene .shop-hut { position: absolute; left: 7%; top: 53%; width: 96px; height: 64px; background: #8bd18b; border: 4px solid #3f6b3f; }
+.scene .shop-hut::before { content: ''; position: absolute; left: -10px; right: -10px; top: -20px; height: 20px;
+  background: repeating-linear-gradient(90deg, #fff 0 14px, #ff5a7a 14px 28px); }
+.scene .shop-hut i { position: absolute; left: 30px; top: 14px; width: 30px; height: 26px; background: #2b3b2b; }
+.scene .zombie { position: absolute; left: 30%; top: 48%; width: 14px; height: 30px; background: #6bb36b; border-radius: 3px;
+  box-shadow: 0 -10px 0 -2px #8fd18f; animation: zomb 3s ease-in-out infinite alternate; }
+@keyframes zomb { to { transform: translateX(60px); } }
+.scene .hero { position: absolute; left: 50%; bottom: 13%; width: 60px; height: 130px; margin-left: -30px; }
+.scene .hero b { position: absolute; left: 12px; top: 0; width: 36px; height: 36px; background: #ffcf9a; border-radius: 6px; }
+.scene .hero i { position: absolute; left: 0; top: 38px; width: 60px; height: 50px; background: #2f6fe0; border-radius: 4px; }
+.scene .hero u { position: absolute; left: 6px; top: 88px; width: 48px; height: 42px; background:
+  linear-gradient(90deg, #3a3a46 0 46%, transparent 46% 54%, #3a3a46 54%); }

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boomland UI Concepts</title>
+<style>
+  :root { --bg: #0f1115; --card: #171a21; --line: #262a33; --txt: #e7e9ee; --mut: #8b92a0; --acc: #ffb020; --ok: #3ecf5a; --mid: #ffd23c; --bad: #ff5a5a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--txt); font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 32px 16px 60px; }
+  h1 { margin: 0; font-size: 30px; } h1 span { color: var(--acc); }
+  .lead { color: var(--mut); max-width: 860px; margin: 8px 0 24px; }
+  .how { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+  .how div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13px; color: var(--mut); }
+  .how b { color: var(--txt); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 18px; }
+  @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; }
+  .card:hover { border-color: var(--acc); transform: translateY(-3px); }
+  .pv { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #000; }
+  .pv iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .pv .n { position: absolute; left: 10px; top: 10px; background: #000c; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+  .bd { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .bd h2 { margin: 0; font-size: 19px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; } .tags span { font-size: 12px; padding: 2px 8px; border-radius: 20px; background: #232733; color: var(--mut); }
+  .bd p { margin: 0; color: var(--mut); font-size: 14px; }
+  .bd .lg { color: var(--txt); } .bd .lg b { color: var(--acc); font-weight: 600; }
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 13px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); }
+  .meta span { color: var(--mut); }
+  .dots { letter-spacing: 2px; } .g { color: var(--ok); } .y { color: var(--mid); } .r { color: var(--bad); }
+  h3 { margin: 44px 0 12px; font-size: 20px; }
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--mut); font-weight: 600; background: #13161c; } tr:last-child td { border-bottom: 0; }
+  td a { color: var(--acc); text-decoration: none; font-weight: 600; }
+  .note { color: var(--mut); font-size: 13px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💣 Boomland — <span>10 концептов UI/HUD</span></h1>
+  <p class="lead">Каждый вариант — свой визуальный стиль <b>и</b> своя логика навигации по меню. Все работают на одних и тех же игровых данных (валюты, Лавка Бабушки Зины, яйца петов, донат, рейтинги), поэтому их можно честно сравнить. Всё кликабельно: покупки, экипировка, открытие яиц, PvE-щит, мини-игры.</p>
+  <div class="how">
+    <div>Вверху каждой страницы: <b>ПК / Телефон / Планшет</b> — как HUD ужмётся на экране</div>
+    <div><b>‹ ›</b> — листать концепты</div>
+    <div>Горячие клавиши указаны прямо в HUD (E, Tab, M, /, 1–5…)</div>
+    <div>Robux — демо-баланс, ничего не списывается</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <h3>Сравнение</h3>
+  <div class="tbl"><table id="cmp"></table></div>
+  <p class="note">«Сложность в Roblox» — насколько легко повторить стиль во встроенном GUI Roblox (Frame, UICorner, UIStroke, UIGradient, TweenService). Стекло с размытием фона, CSS-3D и полутоновые растры там нативно не делаются — нужны картинки-текстуры или обходные пути.</p>
+</div>
+<script>
+const C = [
+  { f: '01-candy', n: 'Карамельный симулятор', tags: ['мульт', 'толстые обводки', 'классика Roblox'], logic: '<b>Кнопки-плитки слева → центральные модалки.</b> Одно окно за раз, вкладки сверху, красные бейджи «!». Яйца — полноэкранное открытие с лучами.', ref: 'жанр «симуляторов» Roblox: питомцы, яйца, крупные кнопки', mob: 3, rbx: 3, kid: 3, uniq: 1 },
+  { f: '02-tactical', n: 'Полевой планшет сапёра', tags: ['военный', 'хаки', 'радар'], logic: '<b>Радиальное меню (Tab) → планшет-шторка справа</b>, игра остаётся видна. Таблица снабжения со статами, штамп «ВЫДАНО». <b>Мини-игра проводов</b> на таймере (E).', ref: 'тактические шутеры, колесо выбора оружия', mob: 2, rbx: 2, kid: 2, uniq: 3 },
+  { f: '03-brutal', n: 'Стикер-брутализм', tags: ['плоский', 'кислотные цвета', 'жёсткие тени'], logic: '<b>Единый хаб-экран (M) с вкладками, список + карточка товара.</b> Корзина: набрать несколько вещей и оплатить разом. Авто-открытие яиц до нужной редкости, таблица «что выгоднее».', ref: 'необрутализм в вебе, инди-игры', mob: 2, rbx: 3, kid: 2, uniq: 3 },
+  { f: '04-pixel', n: 'Пиксель-аркада', tags: ['8-бит', 'CRT', 'клавиатура/геймпад'], logic: '<b>Через диалог с NPC:</b> подходишь к Бабушке Зине (E) → печатный текст → выбор «Купить / Яйца / R$ / Поболтать». JRPG-списки со стрелками, «ДА/НЕТ», пауза (Esc) с HI-SCORE.', ref: 'JRPG и аркады 80–90-х', mob: 1, rbx: 2, kid: 2, uniq: 3 },
+  { f: '05-holo', n: 'Голо-стекло', tags: ['sci-fi', 'неон', 'портал/квант'], logic: '<b>Док-панель снизу (с увеличением) → боковая шторка.</b> Голограмма товара и <b>сравнение с тем, что надето</b> (▲▼ по статам). Квантовый инкубатор с орбитой петов. Стек уведомлений.', ref: 'sci-fi HUD, док macOS', mob: 2, rbx: 1, kid: 2, uniq: 2 },
+  { f: '06-mobile', n: 'Мобильная гача', tags: ['mobile-first', 'большие кнопки', 'LiveOps'], logic: '<b>Нижний таб-бар как в мобильных играх</b>, полноэкранные страницы. Джойстик + большая кнопка действия. <b>Боевой пропуск</b> (free/premium), ежедневные награды 7 дней, акция с таймером, x10 открытие с переворотом карт и «гарантом».', ref: 'мобильные гача-игры и сезонные пропуски', mob: 3, rbx: 3, kid: 3, uniq: 2 },
+  { f: '07-notebook', n: 'Тетрадка в клетку', tags: ['рисованный', 'стикеры', 'уютный'], logic: '<b>Блокнот с закладками: левая страница — список, правая — товар</b>, перелистывание. Список дел на HUD, <b>подсказки Бабушки Зины на стикере со стрелкой</b> (обучение). Яйцо «рисуется» штрихом.', ref: 'doodle-игры, школьная тетрадь', mob: 2, rbx: 2, kid: 3, uniq: 3 },
+  { f: '08-minimal', n: 'Минимал Про', tags: ['тёмный', 'компактный', 'для «потных»'], logic: '<b>Палитра команд (/ или Ctrl+K):</b> пишешь «лазер», Enter — куплено. Поповеры у HUD (кошелёк с графиком дохода, PvE). Магазин — плотная таблица с сортировкой и фильтром.', ref: 'соревновательные игры, IDE', mob: 1, rbx: 3, kid: 1, uniq: 3 },
+  { f: '09-pirate', n: 'Пиратская таверна', tags: ['дерево', 'пергамент', 'море'], logic: '<b>Навигация через карту архипелага:</b> жмёшь место — кораблик плывёт по пунктиру и открывает локацию. Товары на полках с ценниками, верфь, доска «РОЗЫСК» для рейтинга, сундуки за R$, флаг вместо PvE-тумблера.', ref: 'пиратские приключения, карты сокровищ', mob: 2, rbx: 2, kid: 3, uniq: 3 },
+  { f: '10-comic', n: 'Комикс БУМ!', tags: ['комикс', 'полутон', 'звукоподражания'], logic: '<b>Меню — страница комикса из панелей</b>, клик увеличивает панель. Бабушка Зина комментирует товар в пузыре. Яйцо — раскадровка из 3 кадров. <b>Мини-игра «какой провод резать»</b> с подсказкой. «БУМ!», «ЩЁЛК!», «БАБАХ!».', ref: 'комиксы и мультсериалы', mob: 2, rbx: 2, kid: 3, uniq: 3 },
+];
+const dots = (v) => `<span class="dots ${['', 'r', 'y', 'g'][v]}">${'●'.repeat(v)}${'○'.repeat(3 - v)}</span>`;
+document.getElementById('grid').innerHTML = C.map((c, i) => `<a class="card" href="${c.f}.html"><div class="pv"><iframe src="${c.f}.html?embed" loading="lazy" tabindex="-1" title="${c.n}"></iframe><span class="n">${String(i + 1).padStart(2, '0')}</span></div>
+  <div class="bd"><h2>${c.n}</h2><div class="tags">${c.tags.map((t) => `<span>${t}</span>`).join('')}</div><p class="lg">${c.logic}</p><p>Вдохновение: ${c.ref}</p>
+  <div class="meta"><div><span>Телефон:</span> ${dots(c.mob)}</div><div><span>Легко в Roblox:</span> ${dots(c.rbx)}</div><div><span>Для детей 8–13:</span> ${dots(c.kid)}</div><div><span>Необычность:</span> ${dots(c.uniq)}</div></div></div></a>`).join('');
+document.getElementById('cmp').innerHTML = `<tr><th>#</th><th>Концепт</th><th>Как открываются меню</th><th>Фишка</th><th>Телефон</th><th>Легко в Roblox</th><th>Дети</th></tr>` + C.map((c, i) => `<tr><td>${i + 1}</td><td><a href="${c.f}.html">${c.n}</a></td><td>${c.logic.match(/<b>(.*?)<\/b>/)[1]}</td><td>${(c.logic.match(/<b>(.*?)<\/b>/g)[1] || '—').replace(/<\/?b>/g, '')}</td><td>${dots(c.mob)}</td><td>${dots(c.rbx)}</td><td>${dots(c.kid)}</td></tr>`).join('');
+function scale() { document.querySelectorAll('.pv').forEach((p) => { const f = p.querySelector('iframe'); f.style.transform = `scale(${p.clientWidth / 1280})`; }); }
+addEventListener('resize', scale); scale();
+</script>
+</body>
+</html>

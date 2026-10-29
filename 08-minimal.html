@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Минимал Про</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; color: #e9ecef; --bg: #0e1013e6; --line: #ffffff1f; --mut: #8a919c; --acc: #c6ff3d; --bad: #ff5d5d; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .a { position: absolute; z-index: 5; }
+  .panel { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+  .status { left: 12px; top: 12px; display: flex; align-items: stretch; }
+  .status > div { padding: 7px 12px; border-right: 1px solid var(--line); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .status > div:last-child { border-right: 0; } .status > div:hover { background: #ffffff0d; }
+  .status .k { color: var(--mut); font-size: 11px; }
+  .led { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 6px var(--acc); } .led.off { background: var(--bad); box-shadow: 0 0 6px var(--bad); }
+  .inc { color: var(--acc); font-size: 11px; }
+  .timers { right: 12px; top: 12px; padding: 6px 0; min-width: 210px; }
+  .timers div { display: flex; justify-content: space-between; padding: 3px 12px; } .timers span { color: var(--mut); }
+  .cross { left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px; pointer-events: none; }
+  .cross::before, .cross::after { content: ''; position: absolute; background: #fffc; } .cross::before { left: 8px; top: 0; width: 2px; height: 18px; } .cross::after { top: 8px; left: 0; height: 2px; width: 18px; }
+  .ctx { left: calc(50% + 22px); top: calc(50% - 10px); padding: 4px 8px; font-size: 12px; }
+  .ctx kbd, .help kbd, .pal kbd { font-family: 'JetBrains Mono'; font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: #fff; background: #ffffff10; }
+  .hot { left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; }
+  .hs { width: 52px; height: 52px; border-radius: 6px; border: 1px solid transparent; display: grid; place-items: center; font-size: 22px; position: relative; cursor: pointer; }
+  .hs:hover { background: #ffffff0d; } .hs.on { border-color: var(--acc); background: #c6ff3d14; }
+  .hs i { position: absolute; top: 2px; left: 4px; font: 10px 'JetBrains Mono'; color: var(--mut); font-style: normal; }
+  .help { right: 12px; bottom: 12px; padding: 7px 10px; color: var(--mut); cursor: pointer; }
+  .help b { color: #fff; font-weight: 500; }
+  .pets { left: 12px; bottom: 12px; padding: 6px 10px; display: flex; gap: 6px; align-items: center; color: var(--mut); }
+  .pets span { font-size: 18px; }
+  /* popover */
+  .pop { position: absolute; z-index: 40; width: 280px; padding: 12px; display: none; box-shadow: 0 10px 30px #0008; }
+  .pop.on { display: block; animation: pin .12s ease-out; } @keyframes pin { from { opacity: 0; transform: translateY(-4px); } }
+  .pop h4 { margin: 0 0 8px; font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .pop .r { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #ffffff0d; }
+  .pop svg { width: 100%; height: 60px; margin-top: 8px; }
+  /* palette */
+  .veil { position: absolute; inset: 0; z-index: 60; background: #0008; display: none; justify-content: center; align-items: flex-start; padding-top: 90px; }
+  .veil.on { display: flex; }
+  .pal { width: 600px; max-height: 470px; display: flex; flex-direction: column; box-shadow: 0 20px 60px #000c; }
+  .pal input { background: none; border: 0; border-bottom: 1px solid var(--line); color: #fff; font: 16px 'Inter'; padding: 14px 16px; outline: none; }
+  .res { overflow: auto; padding: 6px; }
+  .grp { font-size: 11px; color: var(--mut); padding: 8px 10px 4px; text-transform: uppercase; letter-spacing: .08em; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+  .opt.on { background: #ffffff12; box-shadow: inset 2px 0 0 var(--acc); }
+  .opt .e { width: 22px; text-align: center; font-size: 16px; } .opt .t { flex: 1; } .opt .t mark { background: none; color: var(--acc); }
+  .opt .m { color: var(--mut); font-size: 12px; } .opt .m.no { color: var(--bad); }
+  .foot { border-top: 1px solid var(--line); padding: 7px 12px; color: var(--mut); font-size: 11px; display: flex; gap: 14px; }
+  /* window */
+  .win { position: absolute; z-index: 50; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 820px; height: 520px; display: none; flex-direction: column; box-shadow: 0 20px 60px #000a; }
+  .win.on { display: flex; }
+  .wh { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .wh h3 { margin: 0; font-size: 14px; font-weight: 600; } .wh .sp { flex: 1; }
+  .wh input { background: #ffffff0d; border: 1px solid var(--line); border-radius: 6px; color: #fff; padding: 5px 9px; font: 12px 'Inter'; width: 180px; outline: none; }
+  .x { background: none; border: 0; color: var(--mut); font-size: 16px; cursor: pointer; }
+  .tabs { display: flex; gap: 2px; padding: 8px 14px 0; border-bottom: 1px solid var(--line); }
+  .tab { padding: 6px 12px; color: var(--mut); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.on { color: #fff; border-color: var(--acc); }
+  .wb { flex: 1; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { position: sticky; top: 0; background: #16191e; text-align: left; font-weight: 500; font-size: 11px; color: var(--mut); padding: 8px 10px; cursor: pointer; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  th:hover { color: #fff; } th.s::after { content: ' ↓'; color: var(--acc); } th.s.asc::after { content: ' ↑'; }
+  td { padding: 7px 10px; border-bottom: 1px solid #ffffff0a; white-space: nowrap; } tr:hover td { background: #ffffff08; }
+  .rd { display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--r); margin-right: 6px; }
+  .num { text-align: right; font-family: 'JetBrains Mono'; }
+  .mini { display: inline-block; width: 60px; height: 4px; background: #ffffff14; border-radius: 2px; vertical-align: middle; position: relative; } .mini::after { content: ''; position: absolute; inset: 0; width: var(--v); background: #fff9; border-radius: 2px; }
+  .b { border: 1px solid var(--line); background: #ffffff0d; color: #fff; border-radius: 6px; padding: 4px 10px; font: 500 12px 'Inter'; cursor: pointer; }
+  .b:hover { border-color: var(--acc); } .b.acc { background: var(--acc); color: #111; border-color: var(--acc); } .b.dis { opacity: .35; pointer-events: none; }
+  .toast { position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); z-index: 90; padding: 7px 14px; display: flex; gap: 8px; align-items: center; opacity: 0; transition: opacity .15s; white-space: nowrap; }
+  .toast.on { opacity: 1; } .toast::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--acc); } .toast.bad::before { background: var(--bad); }
+  @container stage (max-height: 450px) { .status, .timers, .hot, .help, .pets, .ctx { zoom: .8; } .win { width: 760px; height: 360px; } .pal { zoom: .8; } .veil { padding-top: 20px; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="a status panel" id="status"></div>
+  <div class="a timers panel"><div><span>Остров сокровищ</span><b class="mono" id="tT"></b></div><div><span>Рейд зомби</span><b class="mono" id="tR"></b></div><div><span>Удача +10%</span><b class="mono">12:40</b></div></div>
+  <div class="a cross"></div>
+  <div class="a ctx panel" id="ctx"><kbd>E</kbd> Обезвредить · Т2 · <span class="mono">+120</span></div>
+  <div class="a pets panel" id="pets"></div>
+  <div class="a hot panel" id="hot"></div>
+  <div class="a help panel" id="help"><b>Команды</b> <kbd>/</kbd> или <kbd>Ctrl K</kbd> · Магазин <kbd>B</kbd></div>
+
+  <div class="pop panel" id="pop"></div>
+  <div class="win panel" id="win"></div>
+  <div class="veil" id="veil"><div class="pal panel"><input id="q" placeholder="Что сделать? купить, пет, pvp, топ…" autocomplete="off"><div class="res" id="res"></div>
+    <div class="foot"><span><kbd>↑↓</kbd> выбор</span><span><kbd>Enter</kbd> выполнить</span><span><kbd>Esc</kbd> закрыть</span></div></div></div>
+  <div class="toast panel" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS } = BL;
+const $ = (s) => document.querySelector(s);
+let slot = 0, win = null, wtab = 'tools', sortK = 'price', asc = true, filt = '', rstat = 'coins', pi = 0, results = [];
+const hist = Array.from({ length: 30 }, (_, i) => 200 + Math.sin(i / 3) * 60 + i * 5);
+
+function toast(m, ok = true) { const t = $('#toast'); t.textContent = m; t.className = 'toast panel on' + (ok ? '' : ' bad'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1700); }
+function hud() {
+  $('#status').innerHTML = `<div data-pop="pve"><span class="led ${S.pve ? '' : 'off'}"></span>${S.pve ? 'PvE' : 'PvP'}</div>
+    <div data-pop="wallet"><span class="k">🪙</span><b class="mono">${BL.full(S.coins)}</b><span class="inc mono">+${S.income}/м</span></div>
+    <div data-pop="wallet"><span class="k">💎</span><span class="mono">${S.gems}</span></div><div data-pop="wallet"><span class="k">₿</span><span class="mono">${BL.full(S.crypto)}</span></div>
+    <div data-pop="wallet"><span class="k">⛏</span><span class="mono">${S.minerals}</span></div><div data-pop="me"><span class="k">#</span><span class="mono">${S.rank}</span></div>`;
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  $('#hot').innerHTML = ids.map((id, i) => `<div class="hs ${i === slot ? 'on' : ''}" data-slot="${i}" title="${id === 'hammer' ? 'Молоток' : BL.item(id).name}"><i>${i + 1}</i>${id === 'hammer' ? '🔨' : BL.item(id).icon}</div>`).join('');
+  $('#pets').innerHTML = S.pets.filter((p) => p.eq).map((p) => `<span title="${PETS[p.key].name}">${PETS[p.key].icon}</span>`).join('') + `<span class="mono" style="font-size:12px">×${BL.petMult().toFixed(2)}</span>`;
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+function popover(kind, anchor) {
+  const p = $('#pop'); if (p.dataset.k === kind && p.classList.contains('on')) return p.classList.remove('on');
+  p.dataset.k = kind;
+  const st = $('#stage').getBoundingClientRect(), k = st.width / $('#stage').offsetWidth, r = anchor.getBoundingClientRect();
+  p.style.left = (r.left - st.left) / k + 'px'; p.style.top = (r.bottom - st.top) / k + 6 + 'px';
+  const max = Math.max(...hist), pts = hist.map((v, i) => `${i * (256 / 29)},${60 - v / max * 54}`).join(' ');
+  p.innerHTML = kind === 'wallet' ? `<h4>Кошелёк</h4>${Object.keys(CUR).map((c) => `<div class="r"><span>${CUR[c].icon} ${CUR[c].name}</span><span class="mono">${BL.full(S[c])}</span></div>`).join('')}
+      <h4 style="margin-top:10px">Доход, 30 мин</h4><svg viewBox="0 0 256 60"><polyline points="${pts}" fill="none" stroke="#c6ff3d" stroke-width="1.5"/></svg>`
+    : kind === 'pve' ? `<h4>Режим</h4><p style="margin:0 0 10px;color:var(--mut)">${S.pve ? 'Щит: рейды и атаки лодок на вас запрещены. Вы тоже не можете атаковать.' : 'PvP: можно грабить соседей, но и вас тоже.'}</p><button class="b acc" data-cmd="pve">${S.pve ? 'Включить PvP' : 'Включить щит'}</button>`
+    : `<h4>Профиль</h4><div class="r"><span>Место по монетам</span><span class="mono">#${S.rank}</span></div><div class="r"><span>Мин снято</span><span class="mono">${S.mines}</span></div><div class="r"><span>Зомби</span><span class="mono">${S.kills}</span></div><div style="margin-top:10px"><button class="b" data-cmd="rank">Открыть рейтинг</button></div>`;
+  p.classList.add('on');
+}
+
+// ---- windows ----
+const COLS = [['name', 'Название'], ['rarity', 'Редкость'], ['speed', 'Скор.'], ['power', 'Мощь'], ['range', 'Дальн.'], ['price', 'Цена']];
+const rv = (it, k) => (k === 'name' ? it.name : k === 'rarity' ? Object.keys(RARITY).indexOf(it.rarity) : k === 'price' ? (it.cur === 'robux' ? it.price * 100 : it.cur === 'gems' ? it.price * 500 : it.cur === 'crypto' ? it.price * 4000 : it.price) : it.stats[k]);
+function openWin(kind) {
+  win = kind; $('#pop').classList.remove('on'); const w = $('#win'); w.classList.add('on');
+  const tabs = kind === 'shop' ? Object.keys(CATS).map((k) => [k, CATS[k].name]) : kind === 'rank' ? STATS.map((s) => [s.id, s.name]) : [['pets', 'Петы'], ['eggs', 'Яйца'], ['rbx', 'Robux']];
+  const cur = kind === 'shop' ? wtab : kind === 'rank' ? rstat : (['pets', 'eggs', 'rbx'].includes(wtab) ? wtab : 'pets');
+  if (kind === 'inv') wtab = cur;
+  let body = '';
+  if (kind === 'shop') {
+    let rows = BL.byCat(wtab).filter((i) => i.name.toLowerCase().includes(filt));
+    rows.sort((a, b) => { const x = rv(a, sortK), y = rv(b, sortK); return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1); });
+    body = `<table><tr>${COLS.map(([k, n]) => `<th data-sort="${k}" class="${k === sortK ? 's' + (asc ? ' asc' : '') : ''} ${['speed', 'power', 'range', 'price'].includes(k) ? 'num' : ''}">${n}</th>`).join('')}<th></th></tr>
+      ${rows.map((it) => { const own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id; return `<tr><td>${it.icon} ${it.name}</td><td><span class="rd" style="--r:${RARITY[it.rarity].color}"></span>${RARITY[it.rarity].name}</td>
+        ${['speed', 'power', 'range'].map((s) => `<td class="num"><span class="mini" style="--v:${it.stats[s]}%"></span> ${it.stats[s]}</td>`).join('')}<td class="num">${BL.price(it)}</td>
+        <td><button class="b ${eq || (own && it.cat === 'build') ? 'dis' : own ? '' : BL.canAfford(it) ? 'acc' : 'dis'}" data-buy="${it.id}">${eq ? 'надето' : own ? (it.cat === 'build' ? 'есть' : 'надеть') : 'купить'}</button></td></tr>`; }).join('')}</table>`;
+  } else if (kind === 'rank') {
+    body = `<table><tr><th>#</th><th>Игрок</th><th class="num">Значение</th><th class="num">Отрыв</th></tr>${RANKS[rstat].map((r, i, a) => `<tr style="${r.me ? 'background:#c6ff3d14' : ''}"><td class="mono">${i + 1}</td><td>${r.name}${r.me ? ' <span style="color:var(--acc)">(вы)</span>' : ''}</td><td class="num">${BL.full(r.value)}</td><td class="num" style="color:var(--mut)">${i ? '−' + BL.fmt(a[0].value - r.value) : '—'}</td></tr>`).join('')}</table>`;
+  } else if (cur === 'pets') {
+    body = `<table><tr><th>Пет</th><th>Редкость</th><th class="num">Множитель</th><th></th></tr>${S.pets.map((p) => { const d = PETS[p.key]; return `<tr><td>${d.icon} ${d.name}</td><td><span class="rd" style="--r:${RARITY[d.rarity].color}"></span>${RARITY[d.rarity].name}</td><td class="num">×${d.mult}</td><td><button class="b ${p.eq ? 'acc' : ''}" data-pet="${p.uid}">${p.eq ? 'в отряде' : 'взять'}</button></td></tr>`; }).join('')}</table>`;
+  } else if (cur === 'eggs') {
+    body = `<table><tr><th>Яйцо</th><th>Шансы</th><th class="num">Цена</th><th></th></tr>${EGGS.map((e) => `<tr><td>${e.icon} ${e.name}</td><td style="white-space:normal">${Object.keys(e.pool).map((k) => PETS[k].icon + ' ' + e.pool[k] + '%').join(' · ')}</td><td class="num">${BL.price(e)}</td><td><button class="b acc" data-hatch="${e.id}">открыть</button></td></tr>`).join('')}</table>`;
+  } else {
+    body = `<table><tr><th>Товар</th><th>Тип</th><th>Описание</th><th class="num">R$</th><th></th></tr>${DONATE.map((d) => `<tr><td>${d.icon} ${d.name}</td><td style="color:var(--mut)">${{ pack: 'пакет', pass: 'геймпасс', boost: 'буст' }[d.kind]}</td><td style="white-space:normal;color:var(--mut)">${d.desc || Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ')}</td><td class="num">${d.price}</td><td><button class="b ${S.passes.has(d.id) ? 'dis' : 'acc'}" data-don="${d.id}">${S.passes.has(d.id) ? 'есть' : 'купить'}</button></td></tr>`).join('')}</table>`;
+  }
+  const title = { shop: 'Лавка Бабушки Зины', rank: 'Рейтинг сервера', inv: 'Петы и Robux' }[kind];
+  w.innerHTML = `<div class="wh"><h3>${title}</h3><span class="sp"></span>${kind === 'shop' ? `<input id="filt" placeholder="Фильтр…" value="${filt}">` : ''}<span style="color:var(--mut)">${kind === 'inv' ? 'R$ ' + S.robux + ' (демо)' : ''}</span><button class="x" data-close>✕</button></div>
+    <div class="tabs">${tabs.map(([k, n]) => `<div class="tab ${k === cur ? 'on' : ''}" data-wtab="${k}">${n}</div>`).join('')}</div><div class="wb">${body}</div>`;
+  const f = $('#filt'); if (f && document.activeElement !== f && filt) { f.focus(); f.setSelectionRange(filt.length, filt.length); }
+}
+function closeWin() { win = null; $('#win').classList.remove('on'); }
+
+// ---- command palette ----
+function commands() {
+  const c = [
+    { g: 'Действия', e: '🛡️', t: S.pve ? 'Выключить щит (PvP)' : 'Включить щит (PvE)', run: () => toast(BL.togglePvE() ? 'Щит включён' : 'PvP включён') },
+    { g: 'Действия', e: '✂️', t: 'Обезвредить мину рядом', m: '+120 🪙', run: () => { BL.earn(120); toast('+120 🪙'); } },
+    { g: 'Окна', e: '🛒', t: 'Открыть магазин', m: 'B', run: () => openWin('shop') },
+    { g: 'Окна', e: '🏆', t: 'Открыть рейтинг', m: 'L', run: () => openWin('rank') },
+    { g: 'Окна', e: '🐾', t: 'Петы и Robux', m: 'P', run: () => openWin('inv') },
+  ];
+  BL.ITEMS.forEach((it) => { const own = S.owned.has(it.id); if (own && it.cat === 'build') return; c.push({ g: 'Товары', e: it.icon, t: (own ? 'Надеть ' : 'Купить ') + it.name, m: own ? 'есть' : BL.price(it), no: !own && !BL.canAfford(it), run: () => { const r = BL.buy(it.id); toast(r.msg, r.ok); } }); });
+  EGGS.forEach((e) => c.push({ g: 'Петы', e: e.icon, t: 'Открыть ' + e.name, m: BL.price(e), run: () => { const r = BL.hatch(e.id); toast(r.ok ? 'Выпал ' + r.pets[0].icon + ' ' + r.pets[0].name + ' (' + RARITY[r.pets[0].rarity].name + ')' : r.msg, r.ok); } }));
+  S.pets.forEach((p) => c.push({ g: 'Петы', e: PETS[p.key].icon, t: (p.eq ? 'Убрать ' : 'Взять ') + PETS[p.key].name, m: '×' + PETS[p.key].mult, run: () => { const r = BL.togglePet(p.uid); toast(r.ok ? 'Готово' : r.msg, r.ok); } }));
+  DONATE.forEach((d) => c.push({ g: 'Robux', e: d.icon, t: d.name, m: 'R$ ' + d.price, run: () => { const r = BL.donate(d.id); toast(r.msg, r.ok); } }));
+  return c;
+}
+function fuzzy(t, q) { if (!q) return t; const i = t.toLowerCase().indexOf(q); return i < 0 ? null : t.slice(0, i) + '<mark>' + t.slice(i, i + q.length) + '</mark>' + t.slice(i + q.length); }
+function paintPal() {
+  const q = $('#q').value.trim().toLowerCase(); results = [];
+  commands().forEach((c) => { const h = fuzzy(c.t, q) ?? (fuzzy(c.g, q) && c.t); if (h) results.push(Object.assign({ h }, c)); });
+  results = results.slice(0, 40); pi = Math.min(pi, Math.max(0, results.length - 1)); let g = '';
+  $('#res').innerHTML = results.map((r, i) => `${r.g !== g ? `<div class="grp">${(g = r.g)}</div>` : ''}<div class="opt ${i === pi ? 'on' : ''}" data-pi="${i}"><span class="e">${r.e}</span><span class="t">${r.h}</span><span class="m ${r.no ? 'no' : ''}">${r.m || ''}</span></div>`).join('') || '<div class="grp">Ничего не найдено</div>';
+  $('#res .opt.on')?.scrollIntoView({ block: 'nearest' });
+}
+function openPal() { $('#veil').classList.add('on'); $('#q').value = ''; pi = 0; paintPal(); setTimeout(() => $('#q').focus(), 0); }
+function closePal() { $('#veil').classList.remove('on'); $('#q').blur(); }
+$('#q').addEventListener('input', () => { pi = 0; paintPal(); });
+$('#q').addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') { pi = Math.min(results.length - 1, pi + 1); paintPal(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { pi = Math.max(0, pi - 1); paintPal(); e.preventDefault(); }
+  else if (e.key === 'Enter' && results[pi]) { const r = results[pi]; closePal(); r.run(); }
+  else if (e.key === 'Escape') closePal();
+  e.stopPropagation();
+});
+
+document.addEventListener('input', (e) => { if (e.target.id === 'filt') { filt = e.target.value.toLowerCase(); openWin('shop'); } });
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-pop],[data-cmd],[data-slot],[data-close],[data-wtab],[data-sort],[data-buy],[data-pet],[data-hatch],[data-don],[data-pi],#help,#ctx,#veil');
+  if (!t) { if (!e.target.closest('#pop')) $('#pop').classList.remove('on'); return; }
+  if (t.id === 'veil' && e.target !== t) return;
+  const d = t.dataset;
+  if (d.pop) popover(d.pop, t);
+  else if (d.cmd === 'pve') { BL.togglePvE(); $('#pop').classList.remove('on'); }
+  else if (d.cmd === 'rank') openWin('rank');
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if ('close' in d) closeWin();
+  else if (d.wtab) { if (win === 'rank') rstat = d.wtab; else wtab = d.wtab; openWin(win); }
+  else if (d.sort) { asc = sortK === d.sort ? !asc : true; sortK = d.sort; openWin('shop'); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg, r.ok); }
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if (d.hatch) { const r = BL.hatch(d.hatch); toast(r.ok ? 'Выпал ' + r.pets[0].icon + ' ' + r.pets[0].name + ' · ' + RARITY[r.pets[0].rarity].name : r.msg, r.ok); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); }
+  else if (d.pi) { const r = results[+d.pi]; closePal(); r.run(); }
+  else if (t.id === 'help') openPal();
+  else if (t.id === 'ctx') { BL.earn(120); toast('+120 🪙 · мина Т2'); }
+  else if (t.id === 'veil') closePal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') e.target.blur(); return; }
+  const k = e.key.toLowerCase();
+  if (k === '/' || (e.ctrlKey && (k === 'k' || k === 'л'))) { e.preventDefault(); openPal(); }
+  else if (k === 'escape') { closeWin(); $('#pop').classList.remove('on'); }
+  else if (k === 'b' || k === 'и') win === 'shop' ? closeWin() : openWin('shop');
+  else if (k === 'l' || k === 'д') win === 'rank' ? closeWin() : openWin('rank');
+  else if (k === 'p' || k === 'з') win === 'inv' ? closeWin() : openWin('inv');
+  else if (k === 'e' || k === 'у') $('#ctx').click();
+  else if (k >= '1' && k <= '5') { slot = +k - 1; hud(); }
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (win) { const st = $('.wb')?.scrollTop; openWin(win); if ($('.wb')) $('.wb').scrollTop = st; } });
+hud(); tick();
+</script>
+</body>
+</html>

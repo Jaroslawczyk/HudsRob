@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Полевой планшет сапёра</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=PT+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common/frame.css">
+<style>
+  #stage { font-family: 'Oswald', 'Arial Narrow', sans-serif; color: #e8e4cf; text-transform: uppercase; letter-spacing: .04em;
+    --olive: #3d4630; --olive2: #586345; --khaki: #c9b98a; --paper: #e9dfbf; --amber: #ffb000; --red: #e8452c; --dark: #1b1f16; }
+  .mono { font-family: 'PT Mono', monospace; letter-spacing: 0; }
+  .p { position: absolute; z-index: 5; }
+  .plate { background: linear-gradient(#4a543a, #353d2a); border: 2px solid #1b1f16; box-shadow: inset 0 0 0 1px #6f7a58, 0 3px 8px #0008; }
+  .plate::before { content: ''; position: absolute; inset: 4px; border: 1px dashed #6f7a5866; pointer-events: none; }
+  .hz { background: repeating-linear-gradient(-45deg, var(--amber) 0 10px, #111 10px 20px); }
+  /* operator card */
+  .op { left: 12px; top: 12px; width: 250px; padding: 10px 12px; }
+  .op h4 { margin: 0 0 6px; font-size: 13px; color: var(--khaki); display: flex; justify-content: space-between; }
+  .op .row { display: flex; justify-content: space-between; align-items: center; font-size: 17px; padding: 2px 0; border-bottom: 1px solid #ffffff14; }
+  .op .row b { font-weight: 600; color: #fff; }
+  .op .row .k { font-size: 12px; color: var(--khaki); }
+  .op .stripe { height: 6px; margin: -10px -12px 8px; }
+  /* compass */
+  .compass { left: 50%; top: 10px; width: 360px; margin-left: -180px; height: 34px; overflow: hidden;
+    background: #1b1f16cc; border: 1px solid #6f7a58; }
+  .compass .tape { position: absolute; top: 0; height: 100%; display: flex; white-space: nowrap; animation: pan 18s linear infinite alternate; }
+  .compass span { width: 40px; text-align: center; font-size: 13px; line-height: 34px; color: var(--khaki); border-left: 1px solid #6f7a5855; }
+  .compass span.c { color: var(--amber); font-weight: 700; }
+  .compass::after { content: '▼'; position: absolute; left: 50%; top: -4px; transform: translateX(-50%); color: var(--amber); font-size: 12px; }
+  @keyframes pan { to { transform: translateX(-280px); } }
+  .alert { left: 50%; top: 52px; transform: translateX(-50%); display: flex; gap: 8px; }
+  .alert div { padding: 4px 10px; font-size: 14px; background: #1b1f16cc; border-left: 4px solid var(--c); }
+  /* radar */
+  .radar { right: 14px; top: 12px; width: 170px; height: 170px; border-radius: 50%; overflow: hidden;
+    background: radial-gradient(#203018, #0f170c); border: 3px solid #6f7a58; box-shadow: 0 0 0 4px #1b1f16, 0 4px 12px #000a; }
+  .radar .ring { position: absolute; inset: 20%; border: 1px solid #4cff6a44; border-radius: 50%; }
+  .radar .ring.b { inset: 40%; }
+  .radar .sweep { position: absolute; inset: 0; background: conic-gradient(from 0deg, #4cff6a66, transparent 60deg); border-radius: 50%; animation: sweep 3s linear infinite; }
+  @keyframes sweep { to { transform: rotate(360deg); } }
+  .radar .blip { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); }
+  .radar .me { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -7px 0 0 -5px; border: 5px solid transparent; border-bottom: 12px solid #fff; border-top: 0; }
+  .radar-cap { right: 14px; top: 190px; width: 170px; text-align: center; font-size: 12px; background: #1b1f16cc; padding: 3px; color: var(--khaki); }
+  .radar-cap b { color: var(--amber); }
+  /* belt */
+  .belt { left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px; }
+  .belt .s { width: 66px; height: 66px; background: #1b1f16; border: 1px solid #6f7a58; position: relative; display: grid; place-items: center; font-size: 30px; cursor: pointer; }
+  .belt .s.on { border-color: var(--amber); box-shadow: inset 0 0 0 2px var(--amber); }
+  .belt .s i { position: absolute; left: 3px; top: 1px; font: 11px 'PT Mono'; color: var(--khaki); }
+  .belt .s u { position: absolute; bottom: 2px; right: 3px; font: 10px 'PT Mono'; text-decoration: none; color: #fff; }
+  .menu-btn { left: 50%; bottom: 96px; transform: translateX(-50%); padding: 6px 18px; font-size: 15px; cursor: pointer; color: #fff; }
+  .menu-btn kbd { font: 12px 'PT Mono'; background: var(--amber); color: #111; padding: 1px 5px; margin-left: 6px; }
+  /* pve lever */
+  .shield { left: 12px; bottom: 12px; width: 196px; padding: 10px 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .lever { width: 54px; height: 26px; border-radius: 13px; background: #1b1f16; border: 1px solid #6f7a58; position: relative; flex: none; }
+  .lever::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #5fd05f; transition: .2s; box-shadow: 0 0 8px #5fd05f; }
+  .shield.off .lever::after { left: 30px; background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .shield b { display: block; font-size: 18px; } .shield small { font-size: 11px; color: var(--khaki); }
+  /* prompt */
+  .prompt { left: 55%; top: 48%; padding: 6px 10px; background: #1b1f16dd; border: 1px solid var(--amber); cursor: pointer; font-size: 14px; }
+  .prompt kbd { background: var(--amber); color: #111; font: 700 13px 'PT Mono'; padding: 1px 6px; margin-right: 6px; }
+  .prompt::after { content: ''; position: absolute; left: 20px; top: 100%; width: 1px; height: 40px; background: var(--amber); }
+  /* radial */
+  .radial { position: absolute; inset: 0; z-index: 40; display: none; background: radial-gradient(#0000 10%, #000a 70%); }
+  .radial.on { display: block; }
+  .wheel { position: absolute; left: 50%; top: 50%; width: 420px; height: 420px; margin: -210px; animation: zin .18s ease-out; }
+  @keyframes zin { from { transform: scale(.7) rotate(-20deg); opacity: 0; } }
+  .sec { position: absolute; width: 120px; height: 92px; margin: -46px -60px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #2a3120ee; border: 1px solid #6f7a58; cursor: pointer; clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%); transition: .12s; }
+  .sec:hover, .sec.hl { background: var(--amber); color: #111; transform: scale(1.1); }
+  .sec .e { font-size: 30px; } .sec .l { font-size: 14px; font-weight: 700; } .sec .k { font: 10px 'PT Mono'; opacity: .7; }
+  .hub { position: absolute; left: 50%; top: 50%; width: 130px; height: 130px; margin: -65px; border-radius: 50%; background: #1b1f16; border: 2px solid var(--amber);
+    display: grid; place-items: center; text-align: center; font-size: 13px; color: var(--khaki); }
+  .hub b { display: block; font-size: 18px; color: #fff; }
+  /* clipboard drawer */
+  .drawer { position: absolute; right: 0; top: 0; bottom: 0; width: 560px; z-index: 50; transform: translateX(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+    display: flex; flex-direction: column; background: #2a3120; border-left: 3px solid #111; box-shadow: -10px 0 30px #000a; }
+  .drawer.on { transform: none; }
+  .clip { height: 14px; flex: none; }
+  .dh { padding: 12px 16px 8px; display: flex; align-items: flex-end; gap: 12px; border-bottom: 2px solid #111; }
+  .dh h2 { margin: 0; font-size: 28px; line-height: 1; color: #fff; }
+  .dh .code { font: 11px 'PT Mono'; color: var(--khaki); }
+  .dh .x { margin-left: auto; background: none; border: 1px solid #6f7a58; color: var(--khaki); font: 600 13px 'Oswald'; padding: 4px 10px; cursor: pointer; text-transform: uppercase; }
+  .paper { margin: 12px; flex: 1; overflow: auto; background: var(--paper); color: #2a2a1e; padding: 12px 14px; box-shadow: inset 0 0 40px #b8a46e;
+    background-image: repeating-linear-gradient(#0000 0 27px, #a8986c55 27px 28px); }
+  .seg { display: flex; margin-bottom: 10px; border: 1px solid #2a2a1e; }
+  .seg button { flex: 1; background: none; border: 0; border-right: 1px solid #2a2a1e; padding: 5px; font: 600 13px 'Oswald'; text-transform: uppercase; cursor: pointer; color: #2a2a1e; }
+  .seg button:last-child { border-right: 0; }
+  .seg button.on { background: #2a2a1e; color: var(--paper); }
+  .ln { display: grid; grid-template-columns: 38px 1fr 120px 92px; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #2a2a1e66; }
+  .ln .ic { font-size: 26px; text-align: center; }
+  .ln .nm { font-size: 16px; font-weight: 600; line-height: 1.1; }
+  .ln .nm small { display: block; font: 11px 'PT Mono'; text-transform: none; opacity: .75; }
+  .stat { display: grid; grid-template-columns: 26px 1fr; gap: 4px; align-items: center; font: 10px 'PT Mono'; }
+  .stat i { height: 6px; background: #2a2a1e22; display: block; position: relative; }
+  .stat i::after { content: ''; position: absolute; inset: 0; width: var(--v); background: #2a2a1e; }
+  .buy { font: 600 13px 'Oswald'; text-transform: uppercase; padding: 6px 4px; border: 2px solid #2a2a1e; background: none; cursor: pointer; color: #2a2a1e; }
+  .buy:hover { background: #2a2a1e; color: var(--paper); }
+  .buy.eq { background: #4a7a2a; color: #fff; border-color: #4a7a2a; }
+  .buy.no { opacity: .45; }
+  .stamp { position: absolute; right: 30px; top: 90px; z-index: 2; border: 4px solid var(--red); color: var(--red); font-size: 34px; font-weight: 700; padding: 4px 14px;
+    transform: rotate(-14deg); opacity: 0; pointer-events: none; }
+  .stamp.on { animation: stamp .9s ease-out; }
+  @keyframes stamp { 0% { opacity: 0; transform: rotate(-14deg) scale(2.4); } 20% { opacity: .9; transform: rotate(-14deg) scale(1); } 80% { opacity: .9; } 100% { opacity: 0; } }
+  .crate { display: inline-block; width: calc(33.3% - 8px); margin: 0 4px 10px; text-align: center; padding: 8px; border: 2px solid #2a2a1e; vertical-align: top; }
+  .crate .e { font-size: 34px; } .crate b { display: block; font-size: 14px; }
+  .k9 { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #2a2a1e; padding: 3px 8px; margin: 3px; cursor: pointer; font-size: 13px; }
+  .k9.eq { background: #2a2a1e; color: var(--paper); }
+  .tbl { width: 100%; border-collapse: collapse; font-family: 'PT Mono'; font-size: 14px; text-transform: none; }
+  .tbl td { padding: 5px 4px; border-bottom: 1px dashed #2a2a1e66; } .tbl tr.me td { background: #ffb00055; font-weight: 700; }
+  .tbl td:last-child { text-align: right; }
+  .note { font: 12px 'PT Mono'; text-transform: none; margin: 4px 0 10px; }
+  /* defuse */
+  .defuse { position: absolute; inset: 0; z-index: 60; display: none; place-items: center; background: #000b; }
+  .defuse.on { display: grid; }
+  .box { width: 560px; padding: 16px; position: relative; }
+  .box h3 { margin: 0 0 8px; display: flex; justify-content: space-between; font-size: 20px; }
+  .timer { height: 8px; background: #1b1f16; margin-bottom: 12px; } .timer i { display: block; height: 100%; background: var(--amber); transition: width .1s linear; }
+  .board { position: relative; height: 250px; background: #1b1f16; border: 1px solid #6f7a58; }
+  .board svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .term { position: absolute; width: 60px; height: 26px; cursor: pointer; border: 2px solid #111; }
+  .term.l { left: 10px; } .term.r { right: 10px; }
+  .term.sel { outline: 3px solid #fff; }
+  .box .tip { font: 12px 'PT Mono'; text-transform: none; color: var(--khaki); margin-top: 8px; }
+  .boom { animation: boom .5s; } @keyframes boom { 20%, 60% { transform: translate(-8px, 4px); background: #a32; } 40%, 80% { transform: translate(8px, -4px); } }
+  .toast { position: absolute; left: 50%; top: 92px; z-index: 90; transform: translateX(-50%); padding: 6px 14px; background: #1b1f16ee; border-left: 4px solid var(--amber);
+    font-size: 15px; opacity: 0; transition: .2s; white-space: nowrap; }
+  .toast.on { opacity: 1; } .toast.bad { border-color: var(--red); }
+  @container stage (max-height: 450px) {
+    .op, .radar, .radar-cap, .belt, .shield, .compass, .alert, .menu-btn { zoom: .6; }
+    .drawer { width: 420px; } .wheel, .box { zoom: .7; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="p op plate" id="op"></div>
+  <div class="p compass"><div class="tape">${''}</div></div>
+  <div class="p alert"><div style="--c:#ffb000">◆ ОСТРОВ СОКРОВИЩ <span class="mono" id="tT"></span></div><div style="--c:#e8452c">☣ РЕЙД ЗОМБИ <span class="mono" id="tR"></span></div></div>
+  <div class="p radar"><div class="ring"></div><div class="ring b"></div><div class="sweep"></div><div class="me"></div></div>
+  <div class="p radar-cap">СЕКТОР <b>Ж-2</b> · МИН РЯДОМ <b>4</b></div>
+  <div class="p shield plate" id="shield"><div class="lever"></div><div><b>ЩИТ PvE</b><small id="shTxt"></small></div></div>
+  <div class="p menu-btn plate" id="menuBtn">☰ ПЛАНШЕТ<kbd>TAB</kbd></div>
+  <div class="p belt plate" id="belt"></div>
+  <div class="p prompt" id="prompt"><kbd>E</kbd>ОБЕЗВРЕДИТЬ · МИНА Т2</div>
+
+  <div class="radial" id="radial"><div class="wheel" id="wheel"></div></div>
+  <div class="drawer" id="drawer"><div class="clip hz"></div><div class="dh"><div><div class="code" id="dCode"></div><h2 id="dTitle"></h2></div><button class="x" id="dClose">✕ ЗАКРЫТЬ [ESC]</button></div><div class="stamp" id="stamp">ВЫДАНО</div><div class="paper" id="paper"></div></div>
+  <div class="defuse" id="defuse"><div class="box plate" id="box"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script src="common/data.js"></script>
+<script src="common/frame.js"></script>
+<script>
+const { S, CUR, RARITY, CATS, PETS, EGGS, DONATE, STATS, RANKS, QUESTS } = BL;
+const $ = (s) => document.querySelector(s);
+let sec = null, shopCat = 'tools', rankStat = 'coins', slot = 0;
+
+document.querySelector('.compass .tape').innerHTML = Array.from({ length: 16 }, (_, i) => {
+  const d = i * 30; const n = { 0: 'С', 90: 'В', 180: 'Ю', 270: 'З', 360: 'С' }[d % 360 === 0 && d ? 360 : d];
+  return `<span class="${n ? 'c' : ''}">${n || d}</span>`;
+}).join('');
+[[30, 40, '#ffd23c'], [60, 70, '#ff8a2a'], [45, 25, '#ff3b3b'], [75, 55, '#3ecf5a'], [22, 62, '#ffd23c'], [70, 30, '#e8452c']].forEach(([x, y, c]) => {
+  const b = document.createElement('div'); b.className = 'blip'; b.style.cssText = `left:${x}%;top:${y}%;--c:${c}`; $('.radar').append(b);
+});
+
+function toast(m, ok = true) { const t = $('#toast'); t.textContent = '▸ ' + m; t.className = 'toast on' + (ok ? '' : ' bad'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
+function hud() {
+  $('#op').innerHTML = `<div class="stripe hz"></div><h4><span>ОПЕРАТИВНИК · Вы</span><span class="mono">#${S.rank}</span></h4>
+    ${['coins', 'gems', 'crypto', 'minerals'].map((k) => `<div class="row"><span class="k">${CUR[k].icon} ${CUR[k].name}</span><b class="mono">${BL.full(S[k])}</b></div>`).join('')}
+    <div class="row"><span class="k">☠ Зомби</span><b class="mono">${S.kills}</b></div><div class="row"><span class="k">✸ Мин снято</span><b class="mono">${S.mines}</b></div>`;
+  $('#shield').classList.toggle('off', !S.pve);
+  $('#shTxt').textContent = S.pve ? 'АКТИВЕН · РЕЙДЫ ЗАПРЕЩЕНЫ' : 'ОТКЛЮЧЁН · ВОЗМОЖНА АТАКА';
+  const ids = [S.equipped.tools, 'det1', 'hammer', S.equipped.weapons, S.equipped.boats];
+  const ammo = ['∞', '12', '—', '24', 'HP 200'];
+  $('#belt').innerHTML = ids.map((id, i) => `<div class="s ${i === slot ? 'on' : ''}" data-slot="${i}"><i>${i + 1}</i>${id === 'hammer' ? '🔨' : BL.item(id).icon}<u>${ammo[i]}</u></div>`).join('');
+}
+function tick() { $('#tT').textContent = BL.mmss(S.treasureAt - Date.now()); $('#tR').textContent = BL.mmss(S.raidAt - Date.now()); }
+
+const SECS = [
+  { k: 'shop', e: '📦', l: 'Снабжение', code: 'ФОРМА 7-Б · ЛАВКА БАБУШКИ ЗИНЫ', key: '1' },
+  { k: 'pets', e: '🐕', l: 'Питомник', code: 'КИНОЛОГИЧЕСКАЯ СЛУЖБА', key: '2' },
+  { k: 'donate', e: '🎖️', l: 'Спецпоставки', code: 'ОСОБЫЙ ОТДЕЛ · R$', key: '3' },
+  { k: 'rank', e: '📊', l: 'Сводка', code: 'РЕЙТИНГ СЕРВЕРА', key: '4' },
+  { k: 'quests', e: '📋', l: 'Приказы', code: 'ЗАДАНИЯ НА СУТКИ', key: '5' },
+  { k: 'info', e: '📻', l: 'Связь', code: 'СПРАВКА И НАСТРОЙКИ', key: '6' },
+];
+$('#wheel').innerHTML = SECS.map((s, i) => {
+  const a = (i / SECS.length) * Math.PI * 2 - Math.PI / 2;
+  return `<div class="sec" data-sec="${s.k}" style="left:${210 + Math.cos(a) * 150}px;top:${210 + Math.sin(a) * 150}px"><span class="e">${s.e}</span><span class="l">${s.l}</span><span class="k">[${s.key}]</span></div>`;
+}).join('') + `<div class="hub"><div><b>ПЛАНШЕТ</b>выберите раздел<br><span class="mono">TAB — закрыть</span></div></div>`;
+
+function bars(st) { return ['speed:СКР', 'power:МОЩ', 'range:ДАЛ'].map((p) => { const [k, l] = p.split(':'); return `<div class="stat">${l}<i style="--v:${st[k]}%"></i></div>`; }).join(''); }
+const PAGES = {
+  shop() {
+    return `<div class="seg">${Object.keys(CATS).map((k) => `<button class="${k === shopCat ? 'on' : ''}" data-cat="${k}">${CATS[k].name}</button>`).join('')}</div>
+      ${BL.byCat(shopCat).map((it) => { const own = S.owned.has(it.id), eq = S.equipped[it.cat] === it.id;
+        return `<div class="ln"><span class="ic">${it.icon}</span><span class="nm">${it.name}<small>${RARITY[it.rarity].name} · ${it.desc}</small></span><span>${bars(it.stats)}</span>
+        <button class="buy ${eq ? 'eq' : ''} ${!own && !BL.canAfford(it) ? 'no' : ''}" data-buy="${it.id}">${eq ? '✓ ВЫДАНО' : own ? (it.cat === 'build' ? 'ПОСТРОЕНО' : 'ВЗЯТЬ') : BL.price(it)}</button></div>`; }).join('')}`;
+  },
+  pets() {
+    return `<div class="note">Ящики с питомцами. Шанс указан в накладной.</div>${EGGS.map((e) => `<div class="crate"><div class="e">${e.icon}</div><b>${e.name}</b>
+      <div class="note">${Object.keys(e.pool).map((k) => PETS[k].icon + e.pool[k] + '%').join(' ')}</div><button class="buy" data-hatch="${e.id}">${BL.price(e)}</button></div>`).join('')}
+      <div class="note">Отряд (${S.pets.filter((p) => p.eq).length}/${S.petSlots}) · множитель x${BL.petMult().toFixed(2)} — нажмите для назначения:</div>
+      ${S.pets.map((p) => `<span class="k9 ${p.eq ? 'eq' : ''}" data-pet="${p.uid}">${PETS[p.key].icon} ${PETS[p.key].name} x${PETS[p.key].mult}</span>`).join('')}`;
+  },
+  donate() {
+    return `<div class="note">Демо-баланс R$ ${S.robux}. Покупки ненастоящие.</div>${DONATE.map((d) => `<div class="ln"><span class="ic">${d.icon}</span>
+      <span class="nm">${d.name}<small>${d.give ? Object.keys(d.give).map((k) => CUR[k].icon + BL.fmt(d.give[k])).join(' + ') : d.desc}${d.tag ? ' · ' + d.tag : ''}</small></span><span class="note">${{ pack: 'ПАКЕТ', pass: 'ДОПУСК', boost: 'БУСТ' }[d.kind]}</span>
+      <button class="buy ${S.passes.has(d.id) ? 'eq' : ''}" data-don="${d.id}">${S.passes.has(d.id) ? '✓ ЕСТЬ' : 'R$ ' + d.price}</button></div>`).join('')}`;
+  },
+  rank() {
+    return `<div class="seg">${STATS.map((s) => `<button class="${s.id === rankStat ? 'on' : ''}" data-stat="${s.id}">${s.name}</button>`).join('')}</div>
+      <table class="tbl">${RANKS[rankStat].map((r, i) => `<tr class="${r.me ? 'me' : ''}"><td>${String(i + 1).padStart(2, '0')}</td><td>${r.name}</td><td>${BL.full(r.value)}</td></tr>`).join('')}</table>`;
+  },
+  quests() {
+    return QUESTS.map((q, i) => `<div class="ln" style="grid-template-columns:38px 1fr 80px 92px"><span class="ic mono">${i + 1}.</span><span class="nm">${q.text}<small>Награда: ${q.reward}</small></span>
+      <span class="mono">${q.done}/${q.need}</span><button class="buy ${q.done >= q.need ? '' : 'no'}" data-claim="${q.id}">${q.done >= q.need ? 'ДОЛОЖИТЬ' : 'В РАБОТЕ'}</button></div>`).join('');
+  },
+  info() {
+    return `${Object.keys(CUR).filter((k) => k !== 'robux').map((k) => `<div class="ln" style="grid-template-columns:38px 1fr"><span class="ic">${CUR[k].icon}</span><span class="nm">${CUR[k].name}<small>${{ coins: 'Снимаются с мин. Траты: снабжение, стройка.', gems: 'Прокачка питомцев.', crypto: 'Майнинг-фермы. Крадут в рейдах.', minerals: 'Каменоломня. Обмен на бафы.' }[k]}</small></span></div>`).join('')}
+      <div class="ln" style="grid-template-columns:1fr 92px"><span class="nm">Скримеры</span><button class="buy eq">ВКЛ</button></div>
+      <div class="ln" style="grid-template-columns:1fr 92px"><span class="nm">Инструктаж Бабушки Зины</span><button class="buy">ПОВТОР</button></div>`;
+  },
+};
+function openRadial(on) { $('#radial').classList.toggle('on', on); }
+function openSec(k) {
+  sec = k; openRadial(false); const s = SECS.find((x) => x.k === k);
+  $('#dCode').textContent = s.code; $('#dTitle').textContent = s.e + ' ' + s.l;
+  $('#paper').innerHTML = PAGES[k](); $('#drawer').classList.add('on');
+}
+function closeAll() { sec = null; $('#drawer').classList.remove('on'); openRadial(false); }
+function stamp(txt) { const s = $('#stamp'); s.textContent = txt; s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }
+
+/* defuse */
+let game = null;
+function startDefuse() {
+  const w = BL.wires(4); game = { w, links: {}, sel: null, t: 10000, start: Date.now() };
+  const y = (i) => 22 + i * 58;
+  $('#box').innerHTML = `<h3><span>⚠ ОБЕЗВРЕЖИВАНИЕ · Т2 ЖЁЛТАЯ</span><span class="mono" id="dT">10.0</span></h3><div class="timer"><i id="dBar" style="width:100%"></i></div>
+    <div class="board" id="board"><svg id="svg"></svg>${w.left.map((c, i) => `<div class="term l" data-l="${i}" style="top:${y(i)}px;background:${c}"></div>`).join('')}${w.right.map((c, i) => `<div class="term r" data-r="${i}" style="top:${y(i)}px;background:${c}"></div>`).join('')}</div>
+    <div class="tip">Соедините клеммы одного цвета: клик слева, затем справа. Награда: ${BL.ZONES[1].reward} 🪙. [ESC] — отступить.</div>`;
+  $('#defuse').classList.add('on');
+  game.iv = setInterval(() => {
+    const left = game.t - (Date.now() - game.start);
+    $('#dT').textContent = (Math.max(0, left) / 1000).toFixed(1); $('#dBar').style.width = Math.max(0, left / game.t * 100) + '%';
+    if (left <= 0) endDefuse(false);
+  }, 100);
+}
+function drawLinks() {
+  const y = (i) => 22 + i * 58 + 13; const W = $('#board').clientWidth;
+  $('#svg').innerHTML = Object.entries(game.links).map(([l, r]) => `<path d="M70 ${y(+l)} C ${W / 2} ${y(+l)}, ${W / 2} ${y(r)}, ${W - 70} ${y(r)}" stroke="${game.w.left[l]}" stroke-width="10" fill="none" stroke-linecap="round"/>`).join('');
+}
+function endDefuse(ok) {
+  clearInterval(game.iv);
+  if (ok) { BL.earn(BL.ZONES[1].reward); toast('Мина обезврежена · +' + BL.ZONES[1].reward + ' 🪙'); $('#defuse').classList.remove('on'); }
+  else { $('#box').classList.add('boom'); toast('БАБАХ! Мина сработала', false); setTimeout(() => { $('#box').classList.remove('boom'); $('#defuse').classList.remove('on'); }, 600); }
+  game = null;
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-sec],[data-cat],[data-buy],[data-hatch],[data-pet],[data-don],[data-stat],[data-claim],[data-slot],[data-l],[data-r],#menuBtn,#shield,#dClose,#prompt,#radial');
+  if (!t) return; const d = t.dataset;
+  if (d.sec) openSec(d.sec);
+  else if (t.id === 'radial') openRadial(false);
+  else if (t.id === 'menuBtn') openRadial(true);
+  else if (t.id === 'dClose') closeAll();
+  else if (t.id === 'shield') toast(BL.togglePvE() ? 'Щит поднят' : 'Щит снят — вы уязвимы', S.pve);
+  else if (t.id === 'prompt') startDefuse();
+  else if (d.slot) { slot = +d.slot; hud(); }
+  else if (d.cat) { shopCat = d.cat; openSec('shop'); }
+  else if (d.stat) { rankStat = d.stat; openSec('rank'); }
+  else if (d.buy) { const r = BL.buy(d.buy); toast(r.msg, r.ok); if (r.ok) stamp(r.equipped ? 'ВЫДАНО' : 'ОПЛАЧЕНО'); }
+  else if (d.don) { const r = BL.donate(d.don); toast(r.msg, r.ok); if (r.ok) stamp('ДОСТАВЛЕНО'); }
+  else if (d.pet) { const r = BL.togglePet(+d.pet); if (!r.ok) toast(r.msg, false); }
+  else if (d.hatch) { const r = BL.hatch(d.hatch); if (!r.ok) return toast(r.msg, false); const p = r.pets[0]; stamp(p.icon + ' ' + RARITY[p.rarity].name.toUpperCase()); toast('В отряд прибыл: ' + p.name + ' x' + p.mult); }
+  else if (d.claim) { const q = QUESTS.find((x) => x.id === d.claim); if (q.done >= q.need) { q.done = 0; toast('Приказ выполнен: ' + q.reward); stamp('ВЫПОЛНЕНО'); openSec('quests'); } }
+  else if (d.l) { game && (game.sel = +d.l); document.querySelectorAll('.term').forEach((x) => x.classList.toggle('sel', x === t)); }
+  else if (d.r && game && game.sel != null) {
+    if (game.w.left[game.sel] !== game.w.right[+d.r]) { endDefuse(false); return; }
+    game.links[game.sel] = +d.r; game.sel = null; drawLinks();
+    if (Object.keys(game.links).length === 4) setTimeout(() => endDefuse(true), 250);
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') { e.preventDefault(); openRadial(!$('#radial').classList.contains('on')); }
+  else if (e.key === 'Escape') { if (game) { clearInterval(game.iv); game = null; $('#defuse').classList.remove('on'); } else closeAll(); }
+  else if ($('#radial').classList.contains('on') && e.key >= '1' && e.key <= '6') openSec(SECS[+e.key - 1].k);
+  else if (e.key >= '1' && e.key <= '5') { slot = +e.key - 1; hud(); }
+  else if ((e.key === 'e' || e.key === 'у') && !game) startDefuse();
+});
+BL.on((w) => { if (w === 'tick') return tick(); hud(); if (sec && w !== 'earn') { const st = $('#paper').scrollTop; $('#paper').innerHTML = PAGES[sec](); $('#paper').scrollTop = st; } });
+hud(); tick();
+</script>
+</body>
+</html>
